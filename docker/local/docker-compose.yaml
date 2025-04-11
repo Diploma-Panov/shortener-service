@@ -1,0 +1,37 @@
+services:
+  shortener-auth-service:
+    container_name: shortener-auth-service
+    image: 533267200006.dkr.ecr.eu-central-1.amazonaws.com/diploma-auth-service:dev.latest
+    ports:
+      - '8181:8181'
+    environment:
+      - spring.datasource.url=jdbc:postgresql://shortener-postgres:5432/auth_service_database
+      - spring.datasource.username=local-user
+      - spring.data.redis.host=shortener-redis
+    depends_on:
+      - shortener-postgres
+      - shortener-redis
+
+  shortener-postgres:
+    container_name: shortener-postgres
+    image: postgres:16.8-alpine3.20
+    environment:
+      POSTGRES_USER: 'local-user'
+      POSTGRES_PASSWORD: 'qwerty'
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - shortener_postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  shortener-redis:
+    container_name: shortener-redis
+    image: redis:8.0-rc1-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - shortener_redis_data:/data
+
+volumes:
+  shortener_postgres_data:
+  shortener_redis_data:

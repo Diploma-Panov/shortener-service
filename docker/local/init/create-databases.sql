@@ -1,0 +1,2 @@
+CREATE DATABASE auth_service_database;
+CREATE DATABASE shortener_service_database;

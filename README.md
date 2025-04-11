@@ -1,2 +1,1 @@
-# shortener-service
-URL shortener service
+# URL shortener service
