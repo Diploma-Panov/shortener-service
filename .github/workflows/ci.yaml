@@ -53,6 +53,7 @@ jobs:
       - name: Run Jest tests
         run: |
           cp .env.ci .env
+          yarn install --frozen-lockfile
           yarn test:ci
 
   push-dev-image-to-ecr:
