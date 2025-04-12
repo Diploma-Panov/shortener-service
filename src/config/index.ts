@@ -26,4 +26,8 @@ export const config = {
         region: getEnv('AWS_REGION'),
         tableName: getEnv('DDB_LINK_RESOLUTIONS_TABLE'),
     },
+    kafka: {
+        bootstrapServer: getEnv('KAFKA_BOOTSTRAP_SERVER'),
+        userUpdatesTopicName: getEnv('KAFKA_USER_UPDATES_TOPIC_NAME'),
+    },
 };

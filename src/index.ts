@@ -1,12 +1,15 @@
 import express from 'express';
 import { config } from './config';
 import { apiRouter } from './routes/api/shrt/v0';
+import { startKafkaConsumer } from './kafka/userUpdatesConsumer';
 
 const app = express();
 
 app.use(express.json());
 
 app.use('/api/shrt/v0', apiRouter);
+
+startKafkaConsumer();
 
 const start = async () => {
     try {
