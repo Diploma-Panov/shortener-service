@@ -8,6 +8,7 @@ const queryClient = postgres({
     database: config.postgres.database,
     user: config.postgres.username,
     password: config.postgres.password,
+    ssl: false,
 });
 
 export const db = drizzle(queryClient);
