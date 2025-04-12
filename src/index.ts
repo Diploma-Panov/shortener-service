@@ -1,13 +1,12 @@
 import express from "express";
 import {config} from "./config";
+import {apiRouter} from "./routes/api/shrt/v0";
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/api/shrt/v0/public/test", (_req, res) => {
-    res.send("<h1>Hello from Express + TS!</h1>>");
-});
+app.use('/api/shrt/v0', apiRouter);
 
 const start = async () => {
     try {

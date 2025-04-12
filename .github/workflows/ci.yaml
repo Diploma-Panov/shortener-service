@@ -1,0 +1,108 @@
+on:
+  workflow_dispatch:
+    inputs:
+      runDevImage:
+        description: 'Push dev image to ECR?'
+        required: true
+        default: 'false'
+      runProdImage:
+        description: 'Push prod image to ECR?'
+        required: true
+        default: 'false'
+  push:
+    branches:
+      - dev
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+
+jobs:
+  build-test:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Install AWS CLI
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: false
+          arch: amd64
+
+      - name: Amazon ECR Login
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+
+      - name: Run build environment
+        run: cd docker/ci && ./pull.sh && ./env.sh
+
+      - name: Test containers
+        run: docker ps
+
+      - name: Run Jest tests
+        run: |
+          cp .env.ci .env
+          yarn test:ci
+
+  push-dev-image-to-ecr:
+    if: github.event.inputs.runDevImage == 'true'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker build -t diploma-shortener-service -f ./docker/ecs/Dockerfile .
+
+      - name: Tag image
+        run: docker tag diploma-shortener-service:latest 533267200006.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/diploma-shortener-service:dev.latest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Amazon ECR Login
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+
+      - name: Push image
+        run: docker push 533267200006.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/diploma-shortener-service:dev.latest
+
+  push-prod-image-to-ecr:
+    if: github.event.inputs.runProdImage == 'true'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker build -t diploma-shortener-service -f ./docker/ecs/Dockerfile .
+
+      - name: Tag image
+        run: docker tag diploma-shortener-service:latest 533267200006.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/diploma-shortener-service:prod.latest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Amazon ECR Login
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+
+      - name: Push image
+        run: docker push 533267200006.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/diploma-shortener-service:prod.latest

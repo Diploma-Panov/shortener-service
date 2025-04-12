@@ -4,8 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/index.ts",
-    "build": "tsc",
+    "build:dev": "tsc --sourceMap true",
+    "build:prod": "tsc --sourceMap false",
+    "start:dev": "ts-node-dev --respawn src/index.ts",
+    "start:prod": "NODE_ENV=production node build/index.js",
+    "test:ci": "jest --coverage",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:push": "drizzle-kit push",
     "drizzle:migrate": "drizzle-kit migrate"
@@ -25,7 +28,12 @@
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.1",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.14.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^29.7.0",
+    "supertest": "^7.1.0",
+    "ts-jest": "^29.3.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   }

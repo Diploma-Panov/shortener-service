@@ -19,7 +19,7 @@ services:
       POSTGRES_USER: 'local-user'
       POSTGRES_PASSWORD: 'qwerty'
     volumes:
-      - ./init:/docker-entrypoint-initdb.d
+      - ../ecs/init:/docker-entrypoint-initdb.d
       - shortener_postgres_data:/var/lib/postgresql/data
     ports:
       - '5432:5432'

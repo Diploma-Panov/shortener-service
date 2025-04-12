@@ -1,0 +1,43 @@
+services:
+  ci-auth-service:
+    container_name: ci-auth-service
+    image: 533267200006.dkr.ecr.eu-central-1.amazonaws.com/diploma-auth-service:dev.latest
+    ports:
+      - '8181:8181'
+    environment:
+      - spring.datasource.url=jdbc:postgresql://ci-postgres:5432/auth_service_database
+      - spring.datasource.username=ci-user
+      - spring.data.redis.host=ci-redis
+    depends_on:
+      - ci-postgres
+      - ci-redis
+
+#  ci-shortener-service:
+#    container_name: ci-shortener-service
+#    build:
+#      context: ../..
+#      dockerfile: ./docker/ecs/Dockerfile
+#      args:
+#        - ENVIRONMENT_NAME=ci
+#    ports:
+#      - '8181:8181'
+#    depends_on:
+#      - ci-postgres
+#      - ci-redis
+
+  ci-postgres:
+    container_name: ci-postgres
+    image: postgres:16.8-alpine3.20
+    environment:
+      POSTGRES_USER: 'ci-user'
+      POSTGRES_PASSWORD: 'qwerty'
+    ports:
+      - '5432:5432'
+    volumes:
+      - ../ecs/init:/docker-entrypoint-initdb.d
+
+  ci-redis:
+    container_name: ci-redis
+    image: redis:8.0-rc1-alpine
+    ports:
+      - '6379:6379'
