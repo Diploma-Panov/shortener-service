@@ -44,6 +44,13 @@ jobs:
       - name: Amazon ECR Login
         uses: aws-actions/amazon-ecr-login@v2.0.1
 
+      - name: Prepare credentials file
+        run: |
+          cp ./docker/ecs/.aws/credentials.template ./docker/ecs/.aws/credentials
+          sed -i 's|AWS_ACCESS_KEY|${{ secrets.AWS_ACCESS_KEY_ID }}|g' ./docker/ecs/.aws/credentials
+          sed -i 's|AWS_SECRET_KEY|${{ secrets.AWS_SECRET_ACCESS_KEY }}|g' ./docker/ecs/.aws/credentials
+
+
       - name: Run build environment
         run: cd docker/ci && ./pull.sh && ./env.sh
 

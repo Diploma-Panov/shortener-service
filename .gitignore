@@ -107,6 +107,7 @@ dist
 .cache
 
 build
+**/credentials
 
 # vitepress build output
 **/.vitepress/dist
