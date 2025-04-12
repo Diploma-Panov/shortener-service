@@ -1,5 +1,5 @@
-import {Router} from "express";
-import {publicRouter} from "./public";
+import { Router } from 'express';
+import { publicRouter } from './public';
 
 const apiRouter = Router();
 

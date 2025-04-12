@@ -1,0 +1,8 @@
+build
+coverage
+docker
+node_modules
+*.html
+*.md
+package.json
+yarn.lock

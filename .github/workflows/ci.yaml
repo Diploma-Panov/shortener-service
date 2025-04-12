@@ -50,10 +50,15 @@ jobs:
       - name: Test containers
         run: docker ps
 
-      - name: Run Jest tests
+      - name: Check formatting
+        run: yarn lint:check
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
         run: |
           cp .env.ci .env
-          yarn install --frozen-lockfile
           yarn test:ci
 
   push-dev-image-to-ecr:

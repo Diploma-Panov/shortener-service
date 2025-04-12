@@ -1,0 +1,46 @@
+{
+    "env": {
+        "node": true,
+        "browser": true,
+        "es6": true,
+        "jest": true
+    },
+    "extends": ["plugin:prettier/recommended"],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["prettier"],
+    "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module"
+    },
+    "ignorePatterns": ["/docker", "/coverage", "/.idea", "package.json", "yarn.lock"],
+    "rules": {
+        "linebreak-style": ["error", "unix"],
+        "quotes": 0,
+        "semi": ["error", "always"],
+        "prettier/prettier": 0,
+        "no-shadow": 1,
+        "no-restricted-globals": 0,
+        "import/prefer-default-export": 0,
+        "camelcase": 1,
+        "no-unused-vars": 1,
+        "import/order": 0,
+        "no-await-in-loop": 1,
+        "no-use-before-define": 1,
+        "no-restricted-syntax": 1,
+        "import/extensions": 0,
+        "class-methods-use-this": 1,
+        "global-require": 0,
+        "prefer-promise-reject-errors": 1,
+        "no-useless-concat": 0,
+        "eqeqeq": 0,
+        "no-plusplus": 0,
+        "prefer-const": 1,
+        "no-param-reassign": 1,
+        "consistent-return": 1,
+        "no-return-await": 0,
+        "default-case": 1,
+        "array-callback-return": 0,
+        "no-case-declarations": 0,
+        "no-prototype-builtins": 0
+    }
+}

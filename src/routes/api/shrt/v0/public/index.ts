@@ -1,5 +1,5 @@
-import {Router} from "express";
-import {platformRouter} from "./platform/platform";
+import { Router } from 'express';
+import { platformRouter } from './platform/platform';
 
 const publicRouter = Router();
 
