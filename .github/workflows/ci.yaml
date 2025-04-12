@@ -68,6 +68,12 @@ jobs:
           cp .env.ci .env
           yarn test:ci
 
+      - name: Show Auth Service logs
+        run: docker logs --tail 500 ci-auth-service
+
+      - name: Show Kafka logs
+        run: docker logs --tail 500 ci-kafka
+
   push-dev-image-to-ecr:
     if: github.event.inputs.runDevImage == 'true'
     runs-on: ubuntu-20.04
