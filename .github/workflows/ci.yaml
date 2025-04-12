@@ -50,11 +50,11 @@ jobs:
       - name: Test containers
         run: docker ps
 
-      - name: Check formatting
-        run: yarn lint:check
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: yarn lint:check
 
       - name: Run tests
         run: |
