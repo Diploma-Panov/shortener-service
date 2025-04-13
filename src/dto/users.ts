@@ -1,9 +1,5 @@
 import { IsBase64, IsEmail, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
-export interface ShortCodeResponseDto {
-    shortCode: string;
-}
-
 export interface UpdateUserInfoDto {
     newFirstname?: string | null;
     newLastname?: string | null;
