@@ -30,4 +30,10 @@ export const config = {
         bootstrapServer: getEnv('KAFKA_BOOTSTRAP_SERVER'),
         userUpdatesTopicName: getEnv('KAFKA_USER_UPDATES_TOPIC_NAME'),
     },
+    jwt: {
+        publicKey: getEnv('JWT_PUBLIC_KEY').replace(/\\n/g, '\n'),
+    },
+    api: {
+        authServiceBaseUrl: getEnv('AUTH_SERVICE_BASE_URL'),
+    },
 };

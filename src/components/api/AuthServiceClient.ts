@@ -24,6 +24,8 @@ import {
     UserLoginDto,
     UserSignupDto,
 } from '../../dto/users';
+import { config } from '../../config';
+import { logger } from '../../config/logger';
 
 const API_AUTH_BASE = '/api/auth';
 const API_AUTH_USER = API_AUTH_BASE + '/v0/user';
@@ -31,21 +33,23 @@ const API_AUTH_PUBLIC = API_AUTH_BASE + '/v0/public';
 
 export class AuthServiceClient {
     private static async apiRequest<T>(
-        config: AxiosRequestConfig,
+        axiosConfig: AxiosRequestConfig,
         accessToken?: string,
     ): Promise<T> {
         try {
+            axiosConfig.baseURL = config.api.authServiceBaseUrl;
             if (accessToken) {
-                config.headers = {
-                    ...(config.headers || {}),
+                axiosConfig.headers = {
+                    ...(axiosConfig.headers || {}),
                     Authorization: accessToken,
                 };
             }
-            const response = await axios.request(config);
+            const response = await axios.request(axiosConfig);
             const resData: AbstractResponseDto<T> = response.data;
             return resData.payload;
         } catch (error: any) {
             if (error.response && error.response.data) {
+                logger.error(JSON.stringify(error.response.data));
                 throw new AuthServiceApiError(error.response.data as ErrorResponseDto);
             }
             throw error;

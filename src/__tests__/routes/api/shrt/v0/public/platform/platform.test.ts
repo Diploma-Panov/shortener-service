@@ -1,7 +1,7 @@
 import express from 'express';
 import request from 'supertest';
 import { HealthResponseDto, HealthStatus } from '../../../../../../../dto/platform/health';
-import { platformRouter } from '../../../../../../../routes/api/shrt/v0/public/platform/platform';
+import { platformRouter } from '../../../../../../../routes/api/shrt/v0/public/platform';
 import { createTestApplication } from '../../../../../../utils/utils';
 
 const app: express.Express = createTestApplication(platformRouter);

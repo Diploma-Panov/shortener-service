@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { AbstractResponseDto } from '../../../../../../dto/common/AbstractResponseDto';
-import { HealthResponseDto, HealthStatus } from '../../../../../../dto/platform/health';
-import { logger } from '../../../../../../config/logger';
+import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
+import { HealthResponseDto, HealthStatus } from '../../../../../dto/platform/health';
+import { logger } from '../../../../../config/logger';
 
 const platformRouter = Router();
 

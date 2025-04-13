@@ -1,10 +1,10 @@
 import { IsBase64, IsEmail, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
 export interface UpdateUserInfoDto {
-    newFirstname?: string | null;
-    newLastname?: string | null;
-    newCompanyName?: string | null;
-    newEmail?: string | null;
+    newFirstname: string | null;
+    newLastname: string | null;
+    newCompanyName: string | null;
+    newEmail: string | null;
 }
 
 export class UpdateUserProfilePictureDto {
@@ -45,21 +45,21 @@ export class UserSignupDto {
 
     @IsOptional()
     @Length(0, 255)
-    lastName?: string | null;
+    lastName: string | null;
 
     @IsOptional()
     @Length(0, 255)
-    companyName?: string | null;
+    companyName: string | null;
 
     @IsOptional()
     @IsBase64()
-    profilePictureBase64?: string | null;
+    profilePictureBase64: string | null;
 
     @IsNotEmpty()
     @IsString()
-    organizationScope: 'SHORTENER_SCOPE';
+    registrationScope: 'SHORTENER_SCOPE';
 
     @IsOptional()
     @IsString()
-    siteUrl?: string | null;
+    siteUrl: string | null;
 }

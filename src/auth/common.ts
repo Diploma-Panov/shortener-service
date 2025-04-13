@@ -83,3 +83,38 @@ export const getAllPermissions = (roles: MemberRole[]): Set<MemberPermission> =>
     }
     return permissionsSet;
 };
+
+export enum UserSystemRole {
+    USER = 'USER',
+    ADMIN = 'ADMIN',
+}
+
+export enum LoginType {
+    USER_LOGIN = 'USER_LOGIN',
+    ADMIN_LOGIN = 'ADMIN_LOGIN',
+    SYSTEM_LOGIN = 'SYSTEM_LOGIN',
+}
+
+export interface OrganizationAccessEntry {
+    organizationId: number;
+    slug: string;
+    allowedUrls: number[];
+    allowedAllUrls: boolean;
+    roles: MemberRole[];
+}
+
+export interface JwtUserSubject {
+    userId: number;
+    username: string;
+    userSystemRole: UserSystemRole;
+    loginType: LoginType;
+    firstname: string;
+    lastname: string;
+    organizations: OrganizationAccessEntry[];
+}
+
+export interface JwtPayload {
+    exp: number;
+    iat: number;
+    sub: string;
+}
