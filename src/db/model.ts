@@ -1,5 +1,5 @@
 import { InferSelectModel } from 'drizzle-orm';
-import { OrganizationMembers, Organizations, ShortUrls, ShortUrlTypePgEnum, Users } from './schema';
+import { OrganizationMembers, Organizations, ShortUrls, Users } from './schema';
 
 export type User = InferSelectModel<typeof Users>;
 

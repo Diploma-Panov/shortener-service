@@ -1,8 +1,12 @@
 import { Kafka } from 'kafkajs';
 import { config } from '../config';
-import { KafkaUserUpdateDto } from './dto/userUpdates';
+import { KafkaOrganizationUpdateDto, KafkaUserUpdateDto } from './dto/userUpdates';
 import { logger } from '../config/logger';
 import { updateOrCreateUser } from '../components/dao/userDao';
+import {
+    deleteAbsentOrganizationsByCreatorUserId,
+    updateOrCreateOrganization,
+} from '../components/dao/organizationDao';
 
 const kafka = new Kafka({
     clientId: 'user-updates-consumer',
@@ -29,6 +33,27 @@ export const startKafkaConsumer = async () => {
                     lastname: userUpdate.lastname,
                     email: userUpdate.email,
                 });
+
+                const organizations: KafkaOrganizationUpdateDto[] =
+                    userUpdate.organizationsCreatedByUser;
+                const organizationIds: number[] = organizations.map((o) => o.id);
+
+                await deleteAbsentOrganizationsByCreatorUserId(organizationIds, userUpdate.id);
+
+                const organizationPromises: Promise<void>[] = [];
+                for (const organization of organizations) {
+                    organizationPromises.push(
+                        updateOrCreateOrganization({
+                            id: organization.id,
+                            creatorUserId: BigInt(userUpdate.id),
+                            name: organization.name,
+                            slug: organization.slug,
+                            siteUrl: organization.siteUrl,
+                            description: organization.description,
+                        }),
+                    );
+                }
+                await Promise.all(organizationPromises);
 
                 logger.info('Kafka user update received:', userUpdate);
             } catch (err) {
