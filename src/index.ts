@@ -14,7 +14,9 @@ startKafkaConsumer();
 const start = async () => {
     try {
         console.log('Postgres connection established.');
-        app.listen(config.app.port, () => console.log(`Server at http://localhost:${config.app.port}`));
+        app.listen(config.app.port, () =>
+            console.log(`Server at http://localhost:${config.app.port}`),
+        );
     } catch (err) {
         console.error('Unable to connect:', err);
     }

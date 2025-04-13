@@ -1,5 +1,15 @@
-import { bigint, customType, pgEnum, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+    bigint,
+    customType,
+    pgEnum,
+    pgTable,
+    serial,
+    text,
+    timestamp,
+    varchar,
+} from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { SHORT_URL_STATES, SHORT_URL_TYPES } from './model';
 
 export const Users = pgTable('users', {
     id: serial('id').primaryKey(),
@@ -31,8 +41,8 @@ export const OrganizationMembers = pgTable('organization_members', {
     displayLastname: varchar('display_lastname', { length: 255 }),
 });
 
-export const ShortUrlState = pgEnum('short_url_state', ['PENDING', 'ACTIVE', 'NOT_ACTIVE', 'ARCHIVED']);
-export const ShortUrlType = pgEnum('short_url_type', ['TRIAL', 'REGULAR']);
+export const ShortUrlStatePgEnum = pgEnum('short_url_state', SHORT_URL_STATES);
+export const ShortUrlTypePgEnum = pgEnum('short_url_type', SHORT_URL_TYPES);
 
 const textArray = customType<{
     data: string[];
@@ -53,8 +63,8 @@ export const ShortUrls = pgTable('short_urls', {
         .references(() => Organizations.id, { onDelete: 'cascade' }),
     originalUrl: varchar('original_url', { length: 1024 }).notNull(),
     shortUrl: varchar('short_url', { length: 63 }).notNull(),
-    shortUrlState: ShortUrlState('short_url_state').notNull(),
-    shortUrlType: ShortUrlType('short_url_type').notNull(),
+    shortUrlState: ShortUrlStatePgEnum('short_url_state').notNull(),
+    shortUrlType: ShortUrlTypePgEnum('short_url_type').notNull(),
     tags: textArray('tags').notNull(),
     createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
