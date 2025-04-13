@@ -1,9 +1,14 @@
+export enum OrganizationScope {
+    SHORTENER_SCOPE = 'SHORTENER_SCOPE',
+}
+
 export interface KafkaOrganizationUpdateDto {
     id: number;
     name: string;
     slug: string;
     siteUrl: string | null;
     description: string | null;
+    scope: OrganizationScope;
 }
 
 export interface KafkaOrganizationMembersUpdateDto {

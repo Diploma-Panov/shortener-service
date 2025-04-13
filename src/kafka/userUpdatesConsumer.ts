@@ -4,6 +4,7 @@ import {
     KafkaOrganizationMembersUpdateDto,
     KafkaOrganizationUpdateDto,
     KafkaUserUpdateDto,
+    OrganizationScope,
 } from './dto/userUpdates';
 import { logger } from '../config/logger';
 import { updateOrCreateUser } from '../components/dao/userDao';
@@ -50,16 +51,18 @@ export const startKafkaConsumer = async () => {
 
                 const organizationPromises: Promise<void>[] = [];
                 for (const organization of organizations) {
-                    organizationPromises.push(
-                        updateOrCreateOrganization({
-                            id: organization.id,
-                            creatorUserId: BigInt(userUpdate.id),
-                            name: organization.name,
-                            slug: organization.slug,
-                            siteUrl: organization.siteUrl,
-                            description: organization.description,
-                        }),
-                    );
+                    if (organization.scope === OrganizationScope.SHORTENER_SCOPE) {
+                        organizationPromises.push(
+                            updateOrCreateOrganization({
+                                id: organization.id,
+                                creatorUserId: BigInt(userUpdate.id),
+                                name: organization.name,
+                                slug: organization.slug,
+                                siteUrl: organization.siteUrl,
+                                description: organization.description,
+                            }),
+                        );
+                    }
                 }
                 await Promise.all(organizationPromises);
 
