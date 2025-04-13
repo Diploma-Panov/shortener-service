@@ -1,12 +1,20 @@
 import { Kafka } from 'kafkajs';
 import { config } from '../config';
-import { KafkaOrganizationUpdateDto, KafkaUserUpdateDto } from './dto/userUpdates';
+import {
+    KafkaOrganizationMembersUpdateDto,
+    KafkaOrganizationUpdateDto,
+    KafkaUserUpdateDto,
+} from './dto/userUpdates';
 import { logger } from '../config/logger';
 import { updateOrCreateUser } from '../components/dao/userDao';
 import {
     deleteAbsentOrganizationsByCreatorUserId,
     updateOrCreateOrganization,
 } from '../components/dao/organizationDao';
+import {
+    deleteAbsentOrganizationMembersByUserId,
+    updateOrCreateOrganizationMember,
+} from '../components/dao/organizationMemberDao';
 
 const kafka = new Kafka({
     clientId: 'user-updates-consumer',
@@ -54,6 +62,25 @@ export const startKafkaConsumer = async () => {
                     );
                 }
                 await Promise.all(organizationPromises);
+
+                const organizationMembers: KafkaOrganizationMembersUpdateDto[] = userUpdate.members;
+                const organizationMemberIds: number[] = organizationMembers.map((om) => om.id);
+
+                await deleteAbsentOrganizationMembersByUserId(organizationMemberIds, userUpdate.id);
+
+                const organizationMemberPromises: Promise<void>[] = [];
+                for (const organizationMember of organizationMembers) {
+                    organizationMemberPromises.push(
+                        updateOrCreateOrganizationMember({
+                            id: organizationMember.id,
+                            memberUserId: BigInt(userUpdate.id),
+                            organizationId: BigInt(organizationMember.organizationId),
+                            displayFirstname: organizationMember.displayFirstname,
+                            displayLastname: organizationMember.displayLastname,
+                        }),
+                    );
+                }
+                await Promise.all(organizationMemberPromises);
 
                 logger.info('Kafka user update received:', userUpdate);
             } catch (err) {
