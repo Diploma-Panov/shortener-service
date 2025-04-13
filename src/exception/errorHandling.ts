@@ -1,5 +1,6 @@
 import { AuthServiceApiError } from './AuthServiceApiError';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { logger } from '../config/logger';
 
 export enum ServiceErrorType {
     PLATFORM_ERROR = 'PLATFORM_ERROR',
@@ -47,7 +48,12 @@ const serviceErrorTypeToResponseStatus = (errorType: ServiceErrorType): number =
     }
 };
 
-export const errorHandlerMiddleware = (error: Error, _req: Request, res: Response) => {
+export const errorHandlerMiddleware = (
+    error: Error,
+    _req: Request,
+    res: Response,
+    _next: NextFunction,
+) => {
     if (error instanceof AuthServiceApiError) {
         const payload = error.errorResponse.errors[0];
         res.status(serviceErrorTypeToResponseStatus(payload.errorType as ServiceErrorType)).json(

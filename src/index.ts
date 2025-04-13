@@ -10,7 +10,7 @@ app.use(express.json());
 
 app.use('/api/shrt/v0', apiRouter);
 
-app.use(errorHandlerMiddleware);
+apiRouter.use(errorHandlerMiddleware);
 
 startKafkaConsumer();
 
