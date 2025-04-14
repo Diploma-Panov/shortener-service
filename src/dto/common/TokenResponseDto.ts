@@ -1,4 +1,4 @@
 export interface TokenResponseDto {
     accessToken: string;
-    refreshToken: string;
+    refreshToken?: string | null;
 }

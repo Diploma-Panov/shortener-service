@@ -26,10 +26,12 @@ import {
 } from '../../dto/users';
 import { config } from '../../config';
 import { logger } from '../../config/logger';
+import { ShortCodeResponseDto } from '../../dto/common/ShortCodeResponseDto';
 
-const API_AUTH_BASE = '/api/auth';
-const API_AUTH_USER = API_AUTH_BASE + '/v0/user';
-const API_AUTH_PUBLIC = API_AUTH_BASE + '/v0/public';
+const API_AUTH_BASE = '/api/auth/v0';
+const API_AUTH_USER = API_AUTH_BASE + '/user';
+const API_AUTH_ADMIN = API_AUTH_BASE + '/admin';
+const API_AUTH_PUBLIC = API_AUTH_BASE + '/public';
 
 export class AuthServiceClient {
     private static async apiRequest<T>(
@@ -351,6 +353,39 @@ export class AuthServiceClient {
             method: 'post',
             url: `${API_AUTH_PUBLIC}/users/login`,
             data,
+        });
+    }
+
+    /**
+     * POST /api/auth/v0/public/users/login
+     */
+    static async loginAsUserByAdmin(
+        userId: number,
+        adminAccessToken: string,
+    ): Promise<ShortCodeResponseDto> {
+        return AuthServiceClient.apiRequest<ShortCodeResponseDto>({
+            method: 'get',
+            url: `${API_AUTH_ADMIN}/users/${userId}/login-as-user`,
+            headers: {
+                Authorization: adminAccessToken,
+            },
+        });
+    }
+
+    /**
+     * POST /api/auth/v0/admin/users/{userId}/info
+     */
+    static async updateUserSystemRoleByAdmin(
+        userId: number,
+        adminAccessToken: string,
+    ): Promise<TokenResponseDto> {
+        return AuthServiceClient.apiRequest<TokenResponseDto>({
+            method: 'patch',
+            url: `${API_AUTH_ADMIN}/users/${userId}/info`,
+            headers: {
+                Authorization: adminAccessToken,
+            },
+            data: { newRole: 'ADMIN' },
         });
     }
 }

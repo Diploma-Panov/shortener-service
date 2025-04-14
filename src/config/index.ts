@@ -13,6 +13,8 @@ export const config = {
     app: {
         port: parseInt(getEnv('SERVER_PORT', '3000')),
         logLevel: getEnv('LOG_LEVEL', 'INFO'),
+        adminUsername: getEnv('ADMIN_USERNAME'),
+        adminPassword: getEnv('ADMIN_PASSWORD'),
     },
     postgres: {
         host: getEnv('DB_HOST'),
