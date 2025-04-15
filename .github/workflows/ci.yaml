@@ -63,13 +63,14 @@ jobs:
       - name: Check formatting
         run: yarn lint:check
 
+      - name: Prepare .env
+        run: cp .env.ci .env
+
       - name: Migrate database
         run: yarn drizzle:migrate
 
       - name: Run tests
-        run: |
-          cp .env.ci .env
-          yarn test:ci
+        run: yarn test:ci
 
       - name: Show Auth Service logs
         run: docker logs --tail 500 ci-auth-service
