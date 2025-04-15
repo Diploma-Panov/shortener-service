@@ -3,7 +3,6 @@ import {
     signupRandomAdminUser,
     signupRandomUser,
 } from '../../../../../utils/apiUtils';
-import { publicUsersRouter } from '../../../../../../routes/api/shrt/v0/public/users';
 import request from 'supertest';
 import { UserLoginDto, UserSignupDto } from '../../../../../../dto/users';
 import {
@@ -14,8 +13,11 @@ import {
 } from '../../../../../utils/dataUtils';
 import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
+import { ServiceErrorType } from '../../../../../../exception/errorHandling';
+import { ErrorResponseDto } from '../../../../../../dto/common/errors';
+import { apiRouter } from '../../../../../../routes/api/shrt/v0';
 
-const app = createTestApplication(publicUsersRouter);
+const app = createTestApplication(apiRouter);
 
 describe('Users public router test', () => {
     it('should sign up new user', async () => {
@@ -29,11 +31,35 @@ describe('Users public router test', () => {
             siteUrl: generateRandomUrl(),
             profilePictureBase64: null,
         };
-        const res = await request(app).post('/signup').send(dto);
+        const res = await request(app).post('/public/users/signup').send(dto);
         expect(res.status).toEqual(200);
         expect(res.body.payload).toEqual<TokenResponseDto>({
             accessToken: expect.any(String),
             refreshToken: expect.any(String),
+        });
+    });
+
+    it('should not signup with non-compliant password', async () => {
+        const dto: UserSignupDto = {
+            username: generateUniqueEmail(),
+            password: 'password',
+            firstName: generateRandomAlphabeticalString(20),
+            lastName: generateRandomAlphabeticalString(20),
+            companyName: generateRandomAlphabeticalString(30),
+            registrationScope: 'SHORTENER_SCOPE',
+            siteUrl: generateRandomUrl(),
+            profilePictureBase64: null,
+        };
+        const res = await request(app).post('/public/users/signup').send(dto);
+        expect(res.status).toEqual(400);
+        expect(res.body).toEqual<ErrorResponseDto>({
+            errors: [
+                {
+                    errorMessage: 'Password password is not compliant',
+                    errorType: ServiceErrorType.PASSWORD_IS_NOT_COMPLIANT,
+                    errorClass: 'UserSignupException',
+                },
+            ],
         });
     });
 
@@ -45,11 +71,49 @@ describe('Users public router test', () => {
             username,
             password,
         };
-        const res = await request(app).post('/login').send(dto);
+        const res = await request(app).post('/public/users/login').send(dto);
         expect(res.status).toEqual(200);
         expect(res.body.payload).toEqual<TokenResponseDto>({
             accessToken: expect.any(String),
             refreshToken: expect.any(String),
+        });
+    });
+
+    it('should not login if user does not exist', async () => {
+        const res = await request(app).post('/public/users/login').send({
+            username: generateUniqueEmail(),
+            password: generateCompliantPassword(),
+        });
+        expect(res.status).toEqual(401);
+        expect(res.body).toEqual<ErrorResponseDto>({
+            errors: [
+                {
+                    errorMessage: 'Login error occurred',
+                    errorType: ServiceErrorType.LOGIN_FAILED,
+                    errorClass: 'LoginException',
+                },
+            ],
+        });
+    });
+
+    it('should not login with wrong password', async () => {
+        const {
+            signupData: { username },
+        } = await signupRandomUser();
+        const dto: UserLoginDto = {
+            username,
+            password: generateCompliantPassword(),
+        };
+        const res = await request(app).post('/public/users/login').send(dto);
+        expect(res.status).toEqual(401);
+        expect(res.body).toEqual<ErrorResponseDto>({
+            errors: [
+                {
+                    errorMessage: 'Login error occurred',
+                    errorType: ServiceErrorType.LOGIN_FAILED,
+                    errorClass: 'LoginException',
+                },
+            ],
         });
     });
 
@@ -59,7 +123,7 @@ describe('Users public router test', () => {
             tokens: { accessToken },
         } = await signupRandomAdminUser();
         const { shortCode } = await AuthServiceClient.loginAsUserByAdmin(userId, accessToken);
-        const res = await request(app).get(`/exchange-short-code/${shortCode}`);
+        const res = await request(app).get(`/public/users/exchange-short-code/${shortCode}`);
         expect(res.status).toEqual(200);
         expect(res.body.payload).toEqual<TokenResponseDto>({
             accessToken: expect.any(String),

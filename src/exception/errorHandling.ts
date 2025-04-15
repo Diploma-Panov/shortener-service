@@ -55,9 +55,9 @@ export const errorHandlerMiddleware = (
     _next: NextFunction,
 ) => {
     if (error instanceof AuthServiceApiError) {
-        const payload = error.errorResponse.errors[0];
-        res.status(serviceErrorTypeToResponseStatus(payload.errorType as ServiceErrorType)).json(
-            payload,
-        );
+        const payload = error.errorResponse;
+        res.status(
+            serviceErrorTypeToResponseStatus(payload.errors[0].errorType as ServiceErrorType),
+        ).json(payload);
     }
 };

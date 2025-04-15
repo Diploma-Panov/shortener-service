@@ -2,15 +2,12 @@ import express from 'express';
 import { config } from './config';
 import { apiRouter } from './routes/api/shrt/v0';
 import { startKafkaConsumer } from './kafka/userUpdatesConsumer';
-import { errorHandlerMiddleware } from './exception/errorHandling';
 
 const app = express();
 
 app.use(express.json());
 
 app.use('/api/shrt/v0', apiRouter);
-
-apiRouter.use(errorHandlerMiddleware);
 
 startKafkaConsumer();
 
