@@ -63,6 +63,9 @@ jobs:
       - name: Check formatting
         run: yarn lint:check
 
+      - name: Migrate database
+        run: yarn drizzle:migrate
+
       - name: Run tests
         run: |
           cp .env.ci .env
