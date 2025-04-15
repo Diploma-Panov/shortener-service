@@ -54,4 +54,18 @@ publicUsersRouter.get('/exchange-short-code/:shortCode', async (req, res, next) 
     }
 });
 
+publicUsersRouter.get('/refresh-token', async (req, res, next) => {
+    try {
+        const refreshToken = req.headers.authorization;
+        logger.info(`Received GET /api/shrt/v0/public/users/refresh-token`);
+        const payload: TokenResponseDto = await AuthServiceClient.refreshToken(refreshToken);
+        res.json({
+            payloadType: 'TokenResponseDto',
+            payload,
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
 export { publicUsersRouter };

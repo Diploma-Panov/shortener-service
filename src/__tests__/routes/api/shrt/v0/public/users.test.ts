@@ -130,4 +130,18 @@ describe('Users public router test', () => {
             refreshToken: null,
         });
     });
+
+    it('should refresh user tokens', async () => {
+        const {
+            tokens: { refreshToken },
+        } = await signupRandomUser();
+        const res = await request(app)
+            .get(`/public/users/refresh-token`)
+            .set('Authorization', refreshToken!);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual<TokenResponseDto>({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+        });
+    });
 });

@@ -388,4 +388,17 @@ export class AuthServiceClient {
             data: { newRole: 'ADMIN' },
         });
     }
+
+    /**
+     * GET /api/auth/v0/public/users/refresh-token
+     */
+    static async refreshToken(refreshToken?: string): Promise<TokenResponseDto> {
+        return AuthServiceClient.apiRequest<TokenResponseDto>({
+            method: 'get',
+            url: `${API_AUTH_PUBLIC}/users/refresh`,
+            headers: {
+                Authorization: refreshToken,
+            },
+        });
+    }
 }
