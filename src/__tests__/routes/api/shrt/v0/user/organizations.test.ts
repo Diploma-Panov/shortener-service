@@ -11,6 +11,7 @@ import {
     OrganizationDto,
     OrganizationsListDto,
     OrganizationType,
+    UpdateOrganizationInfoDto,
 } from '../../../../../../dto/organizations';
 import { ServiceErrorType } from '../../../../../../exception/errorHandling';
 import {
@@ -20,6 +21,7 @@ import {
 } from '../../../../../utils/dataUtils';
 import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
 import { ErrorResponseDto } from '../../../../../../dto/common/errors';
+import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 
 const app = createTestApplication(apiRouter);
 
@@ -205,6 +207,35 @@ describe('Authenticated organizations test', () => {
                     errorClass: 'MethodArgumentNotValidException',
                 },
             ],
+        });
+    });
+
+    it('should update organization info', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
+            accessToken,
+            { scope: OrganizationScope.SHORTENER_SCOPE },
+        );
+        const o: OrganizationDto = organizations.entries[0];
+
+        const dto: UpdateOrganizationInfoDto = {
+            newName: generateRandomAlphabeticalString(20),
+            newDescription: generateRandomAlphabeticalString(40),
+            newUrl: generateRandomUrl(),
+        };
+        const resUpdate = await request(app)
+            .patch(`/user/organizations/${o.slug}`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(resUpdate.status).toEqual(200);
+        expect(resUpdate.body.payload).toEqual<OrganizationDto>({
+            ...o,
+            name: dto.newName!,
+            description: dto.newDescription!,
+            url: dto.newUrl!,
         });
     });
 });

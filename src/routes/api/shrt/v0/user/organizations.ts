@@ -6,6 +6,7 @@ import {
     CreateOrganizationDto,
     OrganizationDto,
     OrganizationsListDto,
+    UpdateOrganizationInfoDto,
 } from '../../../../../dto/organizations';
 import { OrganizationScope } from '../../../../../kafka/dto/userUpdates';
 import { TokenResponseDto } from '../../../../../dto/common/TokenResponseDto';
@@ -81,6 +82,41 @@ authenticatedOrganizationsRouter.post('/', async (req, res, next) => {
 
         res.json({
             payloadType: 'TokenResponseDto',
+            payload,
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
+authenticatedOrganizationsRouter.patch('/:slug', async (req, res, next) => {
+    try {
+        const { slug } = req.params;
+        const dto: UpdateOrganizationInfoDto = req.body;
+        const accessToken: string = req.headers.authorization ?? '';
+        const { userId } = parseJwtToken(accessToken);
+        logger.info(
+            `Received PATCH /api/shrt/v0/user/organizations/${slug} by userId=${userId} with dto=${JSON.stringify(
+                dto,
+            )}`,
+        );
+
+        const payload: OrganizationDto = await AuthServiceClient.updateOrganizationInfo(
+            accessToken,
+            slug,
+            dto,
+        );
+        await updateOrCreateOrganization({
+            slug: payload.slug,
+            id: payload.id,
+            name: payload.name,
+            creatorUserId: BigInt(userId),
+            siteUrl: payload.url,
+            description: payload.description,
+        });
+
+        res.json({
+            payloadType: 'OrganizationDto',
             payload,
         });
     } catch (e) {
