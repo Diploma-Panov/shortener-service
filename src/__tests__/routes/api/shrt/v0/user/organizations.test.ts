@@ -278,4 +278,52 @@ describe('Authenticated organizations test', () => {
 
         expect(updateRes1.body.payload.avatarUrl).not.toEqual(updateRes2.body.payload.avatarUrl);
     });
+
+    it('should delete organization avatar', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
+            accessToken,
+            { scope: OrganizationScope.SHORTENER_SCOPE },
+        );
+        const o: OrganizationDto = organizations.entries[0];
+
+        const dto: UpdateOrganizationAvatarDto = {
+            newAvatarBase64: generateRandomAlphanumericalString(100),
+        };
+        const updateRes = await request(app)
+            .put(`/user/organizations/${o.slug}/avatar`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(updateRes.status).toEqual(200);
+        expect(updateRes.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: expect.any(String),
+        });
+
+        const infoRes1 = await request(app)
+            .get(`/user/organizations/${o.slug}`)
+            .set('Authorization', accessToken);
+        expect(infoRes1.status).toEqual(200);
+        expect(infoRes1.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: updateRes.body.payload.avatarUrl,
+        });
+
+        const deleteRes = await request(app)
+            .delete(`/user/organizations/${o.slug}/avatar`)
+            .set('Authorization', accessToken);
+        expect(deleteRes.status).toEqual(200);
+        expect(deleteRes.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: null,
+        });
+
+        const infoRes2 = await request(app)
+            .get(`/user/organizations/${o.slug}`)
+            .set('Authorization', accessToken);
+        expect(infoRes2.status).toEqual(200);
+        expect(infoRes2.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: null,
+        });
+    });
 });
