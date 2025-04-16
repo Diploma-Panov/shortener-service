@@ -326,4 +326,55 @@ describe('Authenticated organizations test', () => {
             avatarUrl: null,
         });
     });
+
+    it('should delete organization', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
+            accessToken,
+            { scope: OrganizationScope.SHORTENER_SCOPE },
+        );
+        const o: OrganizationDto = organizations.entries[0];
+
+        const deletePermanentRes = await request(app)
+            .delete(`/user/organizations/${o.slug}`)
+            .set('Authorization', accessToken);
+        expect(deletePermanentRes.status).toEqual(403);
+        expect(deletePermanentRes.body).toEqual({
+            errors: [
+                {
+                    errorMessage: `Cannot remove a permanent organization ${o.slug}`,
+                    errorType: ServiceErrorType.ORGANIZATION_ACTION_NOT_ALLOWED,
+                    errorClass: 'OrganizationActionNotAllowed',
+                },
+            ],
+        });
+
+        const {
+            organization: { slug: manualOrgSlug },
+            tokens: { accessToken: newToken },
+        } = await createOrganizationForUser(accessToken);
+        const organizationsBeforeRemoval: OrganizationsListDto =
+            await AuthServiceClient.getUserOrganizations(newToken, {
+                scope: OrganizationScope.SHORTENER_SCOPE,
+            });
+        expect(organizationsBeforeRemoval.entries).toHaveLength(2);
+
+        const deleteManualRes = await request(app)
+            .delete(`/user/organizations/${manualOrgSlug}`)
+            .set('Authorization', newToken);
+        expect(deleteManualRes.status).toEqual(200);
+        expect(deleteManualRes.body.payload).toEqual<TokenResponseDto>({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+        });
+
+        const organizationsAfterRemoval: OrganizationsListDto =
+            await AuthServiceClient.getUserOrganizations(newToken, {
+                scope: OrganizationScope.SHORTENER_SCOPE,
+            });
+        expect(organizationsAfterRemoval.entries).toHaveLength(1);
+    });
 });

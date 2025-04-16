@@ -173,4 +173,25 @@ authenticatedOrganizationsRouter.delete('/:slug/avatar', async (req, res, next) 
     }
 });
 
+authenticatedOrganizationsRouter.delete('/:slug', async (req, res, next) => {
+    try {
+        const { slug } = req.params;
+        const accessToken: string = req.headers.authorization ?? '';
+        const { userId } = parseJwtToken(accessToken);
+        logger.info(`Received DELETE /api/shrt/v0/user/organizations/${slug} by userId=${userId}`);
+
+        const payload: TokenResponseDto = await AuthServiceClient.deleteOrganization(
+            accessToken,
+            slug,
+        );
+
+        res.json({
+            payloadType: 'TokenResponseDto',
+            payload,
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
 export { authenticatedOrganizationsRouter };
