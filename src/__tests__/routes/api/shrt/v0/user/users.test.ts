@@ -101,4 +101,39 @@ describe('Users authenticated controller test', () => {
             profilePictureUrl: resUpdate.body.payload.profilePictureUrl,
         });
     });
+
+    it('should remove profile picture of user', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const dto: UpdateUserProfilePictureDto = {
+            newProfilePictureBase64: generateRandomAlphabeticalString(20),
+        };
+
+        const resUpdate = await request(app)
+            .put(`/user/users/picture`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(resUpdate.status).toEqual(200);
+        expect(resUpdate.body.payload).toMatchObject<Partial<UserInfoDto>>({
+            profilePictureUrl: expect.any(String),
+        });
+
+        const resRemove = await request(app)
+            .delete(`/user/users/picture`)
+            .set('Authorization', accessToken);
+        expect(resRemove.status).toEqual(200);
+        expect(resRemove.body.payload).toMatchObject<Partial<UserInfoDto>>({
+            profilePictureUrl: null,
+        });
+
+        const resInfo = await request(app)
+            .get(`/user/users/info`)
+            .set('Authorization', accessToken);
+        expect(resInfo.status).toEqual(200);
+        expect(resInfo.body.payload).toMatchObject<Partial<UserInfoDto>>({
+            profilePictureUrl: null,
+        });
+    });
 });

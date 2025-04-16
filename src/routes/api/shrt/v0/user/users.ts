@@ -57,4 +57,19 @@ authenticatedUsersRouter.put('/picture', async (req, res, next) => {
     }
 });
 
+authenticatedUsersRouter.delete('/picture', async (req, res, next) => {
+    try {
+        const accessToken: string = req.headers.authorization ?? '';
+        const { userId } = parseJwtToken(accessToken);
+        logger.info(`Received DELETE /api/shrt/v0/user/user/picture for userId=${userId}`);
+        const payload: UserInfoDto = await AuthServiceClient.deleteProfilePicture(accessToken);
+        res.json({
+            payloadType: 'UserInfoDto',
+            payload,
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
 export { authenticatedUsersRouter };

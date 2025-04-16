@@ -38,13 +38,13 @@ export const generateUniqueEmail = () => {
 
 export const generateCompliantPassword = () => {
     let rv = '';
-    for (let i = 0; i < 3; ++i) {
+    for (let i = 0; i < 5; ++i) {
         rv += uppercaseAlphabet.charAt(Math.round(Math.random() * uppercaseAlphabet.length));
     }
     for (let i = 0; i < 5; ++i) {
         rv += lowercaseAlphabet.charAt(Math.round(Math.random() * lowercaseAlphabet.length));
     }
-    for (let i = 0; i < 2; ++i) {
+    for (let i = 0; i < 5; ++i) {
         rv += numberAlphabet.charAt(Math.round(Math.random() * numberAlphabet.length));
     }
     rv += '#/+-';
