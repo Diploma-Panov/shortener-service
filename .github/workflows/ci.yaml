@@ -80,7 +80,7 @@ jobs:
 
   push-dev-image-to-ecr:
     if: github.event.inputs.runDevImage == 'true'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
@@ -109,7 +109,7 @@ jobs:
 
   push-prod-image-to-ecr:
     if: github.event.inputs.runProdImage == 'true'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3

@@ -27,6 +27,7 @@ import {
 import { config } from '../../config';
 import { logger } from '../../config/logger';
 import { ShortCodeResponseDto } from '../../dto/common/ShortCodeResponseDto';
+import { OrganizationScope } from '../../kafka/dto/userUpdates';
 
 const API_AUTH_BASE = '/api/auth/v0';
 const API_AUTH_USER = API_AUTH_BASE + '/user';
@@ -63,7 +64,7 @@ export class AuthServiceClient {
      */
     static async getUserOrganizations(
         accessToken: string,
-        params: { p?: number; q?: number; sb?: string; dir?: string },
+        params: { p?: number; q?: number; sb?: string; dir?: string; scope: OrganizationScope },
     ): Promise<OrganizationsListDto> {
         return AuthServiceClient.apiRequest<OrganizationsListDto>(
             {

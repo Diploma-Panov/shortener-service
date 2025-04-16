@@ -3,14 +3,18 @@ import { UserSignupDto } from '../../dto/users';
 import {
     generateCompliantPassword,
     generateRandomAlphabeticalString,
+    generateRandomAlphanumericalString,
     generateRandomUrl,
     generateUniqueEmail,
+    generateUniqueSlug,
 } from './dataUtils';
 import { loginViaAuthService, signupNewUser } from '../../components/service/userService';
 import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../components/api/AuthServiceClient';
 import { config } from '../../config';
 import { parseJwtToken } from '../../auth/jwt';
+import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations';
+import { updateOrCreateOrganization } from '../../components/dao/organizationDao';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();
@@ -59,4 +63,47 @@ export const signupRandomAdminUser = async (): Promise<{
         password: rv.signupData.password,
     });
     return rv;
+};
+
+export const createOrganizationForUser = async (
+    accessToken: string,
+): Promise<{
+    organization: OrganizationDto;
+    tokens: TokenResponseDto;
+}> => {
+    const { userId } = parseJwtToken(accessToken);
+
+    const slug: string = generateUniqueSlug();
+    const dto: CreateOrganizationDto = {
+        description: generateRandomAlphanumericalString(40),
+        name: generateRandomAlphabeticalString(20),
+        scope: 'SHORTENER_SCOPE',
+        url: generateRandomUrl(),
+        avatarBase64: null,
+        slug,
+    };
+
+    const tokens: TokenResponseDto = await AuthServiceClient.createNewOrganization(
+        accessToken,
+        dto,
+    );
+
+    const organization: OrganizationDto = await AuthServiceClient.getUserOrganizationBySlug(
+        tokens.accessToken,
+        slug,
+    );
+
+    await updateOrCreateOrganization({
+        id: organization.id,
+        name: organization.name,
+        creatorUserId: BigInt(userId),
+        slug,
+        siteUrl: organization.url,
+        description: organization.description,
+    });
+
+    return {
+        organization,
+        tokens,
+    };
 };

@@ -32,6 +32,16 @@ export const generateRandomAlphanumericalString = (len: number) => {
     return rv;
 };
 
+export const generateUniqueSlug = () => {
+    let rv = '';
+    rv += generateRandomAlphanumericalString(10).toLowerCase();
+    rv += '-';
+    rv += generateRandomAlphanumericalString(10).toLowerCase();
+    rv += '-';
+    rv += generateRandomAlphanumericalString(10).toLowerCase();
+    return rv;
+};
+
 export const generateUniqueEmail = () => {
     return `test.user+${generateRandomNumericString(10)}@mpanov.com`;
 };

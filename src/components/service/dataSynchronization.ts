@@ -7,7 +7,8 @@ import { MemberRole, OrganizationAccessEntry } from '../../auth/common';
 import { updateOrCreateOrganization } from '../dao/organizationDao';
 import { OrganizationMemberDto, OrganizationMembersListDto } from '../../dto/organizationMembers';
 import { updateOrCreateOrganizationMember } from '../dao/organizationMemberDao';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { OrganizationScope } from '../../kafka/dto/userUpdates';
 
 export const ensureInfoIsSynchronized = async (accessToken: string): Promise<void> => {
     logger.debug(`Parsing received JWT token ${accessToken}`);
@@ -22,7 +23,7 @@ export const ensureInfoIsSynchronized = async (accessToken: string): Promise<voi
 
     const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
         accessToken,
-        { p: 0, q: 1000 },
+        { p: 0, q: 1000, scope: OrganizationScope.SHORTENER_SCOPE },
     );
     const personalEntry: OrganizationAccessEntry = userSubject.organizations.find((o) =>
         o.roles.includes(MemberRole.ORGANIZATION_OWNER),
