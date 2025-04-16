@@ -1,6 +1,5 @@
 import { AuthServiceApiError } from './AuthServiceApiError';
 import { NextFunction, Request, Response } from 'express';
-import { logger } from '../config/logger';
 
 export enum ServiceErrorType {
     PLATFORM_ERROR = 'PLATFORM_ERROR',

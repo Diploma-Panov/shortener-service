@@ -16,7 +16,7 @@ export class UpdateUserProfilePictureDto {
 export interface UserInfoDto {
     id: number;
     firstname: string;
-    lastname: string;
+    lastname: string | null;
     companyName: string | null;
     email: string;
     profilePictureUrl: string | null;

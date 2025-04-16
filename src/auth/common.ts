@@ -72,16 +72,16 @@ export const allMemberRoles: MemberRolesDefinitions = {
     },
 };
 
-export const hasPermission = (roles: MemberRole[], permission: MemberPermission): boolean => {
-    return getAllPermissions(roles).has(permission);
-};
-
 export const getAllPermissions = (roles: MemberRole[]): Set<MemberPermission> => {
     const permissionsSet = new Set<MemberPermission>();
     for (const role of roles) {
         for (const permission of allMemberRoles[role].permissions) permissionsSet.add(permission);
     }
     return permissionsSet;
+};
+
+export const hasPermission = (roles: MemberRole[], permission: MemberPermission): boolean => {
+    return getAllPermissions(roles).has(permission);
 };
 
 export enum UserSystemRole {
