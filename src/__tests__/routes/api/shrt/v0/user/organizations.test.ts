@@ -6,8 +6,20 @@ import {
 import { apiRouter } from '../../../../../../routes/api/shrt/v0';
 import request from 'supertest';
 import { OrganizationScope } from '../../../../../../kafka/dto/userUpdates';
-import { OrganizationsListDto } from '../../../../../../dto/organizations';
+import {
+    CreateOrganizationDto,
+    OrganizationDto,
+    OrganizationsListDto,
+    OrganizationType,
+} from '../../../../../../dto/organizations';
 import { ServiceErrorType } from '../../../../../../exception/errorHandling';
+import {
+    generateRandomAlphabeticalString,
+    generateRandomUrl,
+    generateUniqueSlug,
+} from '../../../../../utils/dataUtils';
+import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
+import { ErrorResponseDto } from '../../../../../../dto/common/errors';
 
 const app = createTestApplication(apiRouter);
 
@@ -124,5 +136,75 @@ describe('Authenticated organizations test', () => {
             .set('Authorization', secondToken);
         expect(resOk.status).toEqual(200);
         expect(resOk.body.payload).toEqual(organization);
+    });
+
+    it('should create new organization by user', async () => {
+        const {
+            tokens: { accessToken: firstToken },
+        } = await signupRandomUser();
+
+        const dto: CreateOrganizationDto = {
+            avatarBase64: null,
+            description: generateRandomAlphabeticalString(20),
+            name: generateRandomAlphabeticalString(20),
+            scope: 'SHORTENER_SCOPE',
+            slug: generateUniqueSlug(),
+            url: generateRandomUrl(),
+        };
+        const resCreate = await request(app)
+            .post('/user/organizations')
+            .set('Authorization', firstToken)
+            .send(dto);
+        expect(resCreate.status).toEqual(200);
+        expect(resCreate.body.payload).toEqual<TokenResponseDto>({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+        });
+
+        const newToken: string = resCreate.body.payload.accessToken;
+        const resInfo = await request(app)
+            .get(`/user/organizations/${dto.slug}`)
+            .set('Authorization', newToken);
+        expect(resInfo.status).toEqual(200);
+        expect(resInfo.body.payload).toEqual<OrganizationDto>({
+            id: expect.any(Number),
+            name: dto.name,
+            slug: dto.slug,
+            scope: 'SHORTENER_SCOPE',
+            url: dto.url,
+            description: dto.description,
+            avatarUrl: null,
+            type: OrganizationType.MANUAL,
+            membersCount: 1,
+        });
+    });
+
+    it('should return error if creation dto is invalid', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const dto = {
+            avatarBase64: null,
+            description: null,
+            name: null,
+            scope: 'SHORTENER_SCOPE',
+            slug: null,
+            url: null,
+        };
+        const resCreate = await request(app)
+            .post('/user/organizations')
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(resCreate.status).toEqual(400);
+        expect(resCreate.body).toEqual<ErrorResponseDto>({
+            errors: [
+                {
+                    errorMessage: expect.any(String),
+                    errorType: ServiceErrorType.FORM_VALIDATION_FAILED,
+                    errorClass: 'MethodArgumentNotValidException',
+                },
+            ],
+        });
     });
 });
