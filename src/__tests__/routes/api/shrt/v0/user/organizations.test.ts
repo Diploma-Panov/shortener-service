@@ -11,11 +11,13 @@ import {
     OrganizationDto,
     OrganizationsListDto,
     OrganizationType,
+    UpdateOrganizationAvatarDto,
     UpdateOrganizationInfoDto,
 } from '../../../../../../dto/organizations';
 import { ServiceErrorType } from '../../../../../../exception/errorHandling';
 import {
     generateRandomAlphabeticalString,
+    generateRandomAlphanumericalString,
     generateRandomUrl,
     generateUniqueSlug,
 } from '../../../../../utils/dataUtils';
@@ -237,5 +239,43 @@ describe('Authenticated organizations test', () => {
             description: dto.newDescription!,
             url: dto.newUrl!,
         });
+    });
+
+    it('should update organization avatar', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
+            accessToken,
+            { scope: OrganizationScope.SHORTENER_SCOPE },
+        );
+        const o: OrganizationDto = organizations.entries[0];
+
+        const dto1: UpdateOrganizationAvatarDto = {
+            newAvatarBase64: generateRandomAlphanumericalString(100),
+        };
+        const updateRes1 = await request(app)
+            .put(`/user/organizations/${o.slug}/avatar`)
+            .set('Authorization', accessToken)
+            .send(dto1);
+        expect(updateRes1.status).toEqual(200);
+        expect(updateRes1.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: expect.any(String),
+        });
+
+        const dto2: UpdateOrganizationAvatarDto = {
+            newAvatarBase64: generateRandomAlphanumericalString(100),
+        };
+        const updateRes2 = await request(app)
+            .put(`/user/organizations/${o.slug}/avatar`)
+            .set('Authorization', accessToken)
+            .send(dto2);
+        expect(updateRes2.status).toEqual(200);
+        expect(updateRes2.body.payload).toMatchObject<Partial<OrganizationDto>>({
+            avatarUrl: expect.any(String),
+        });
+
+        expect(updateRes1.body.payload.avatarUrl).not.toEqual(updateRes2.body.payload.avatarUrl);
     });
 });

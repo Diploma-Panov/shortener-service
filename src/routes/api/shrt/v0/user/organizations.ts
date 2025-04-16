@@ -6,6 +6,7 @@ import {
     CreateOrganizationDto,
     OrganizationDto,
     OrganizationsListDto,
+    UpdateOrganizationAvatarDto,
     UpdateOrganizationInfoDto,
 } from '../../../../../dto/organizations';
 import { OrganizationScope } from '../../../../../kafka/dto/userUpdates';
@@ -114,6 +115,31 @@ authenticatedOrganizationsRouter.patch('/:slug', async (req, res, next) => {
             siteUrl: payload.url,
             description: payload.description,
         });
+
+        res.json({
+            payloadType: 'OrganizationDto',
+            payload,
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
+authenticatedOrganizationsRouter.put('/:slug/avatar', async (req, res, next) => {
+    try {
+        const { slug } = req.params;
+        const dto: UpdateOrganizationAvatarDto = req.body;
+        const accessToken: string = req.headers.authorization ?? '';
+        const { userId } = parseJwtToken(accessToken);
+        logger.info(
+            `Received PUT /api/shrt/v0/user/organizations/${slug}/avatar by userId=${userId}`,
+        );
+
+        const payload: OrganizationDto = await AuthServiceClient.updateOrganizationAvatar(
+            accessToken,
+            slug,
+            dto,
+        );
 
         res.json({
             payloadType: 'OrganizationDto',
