@@ -2,7 +2,11 @@ import { createTestApplication, signupRandomUser } from '../../../../../utils/ap
 import request from 'supertest';
 import { apiRouter } from '../../../../../../routes/api/shrt/v0';
 import { Express } from 'express';
-import { UpdateUserInfoDto, UserInfoDto } from '../../../../../../dto/users';
+import {
+    UpdateUserInfoDto,
+    UpdateUserProfilePictureDto,
+    UserInfoDto,
+} from '../../../../../../dto/users';
 import {
     generateRandomAlphabeticalString,
     generateRandomAlphanumericalString,
@@ -68,6 +72,33 @@ describe('Users authenticated controller test', () => {
             companyName: updateDto.newCompanyName,
             email: updateDto.newEmail!,
             profilePictureUrl: null,
+        });
+    });
+
+    it('should upload user profile picture', async () => {
+        const {
+            tokens: { accessToken },
+        } = await signupRandomUser();
+
+        const dto: UpdateUserProfilePictureDto = {
+            newProfilePictureBase64: generateRandomAlphabeticalString(20),
+        };
+
+        const resUpdate = await request(app)
+            .put(`/user/users/picture`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(resUpdate.status).toEqual(200);
+        expect(resUpdate.body.payload).toMatchObject<Partial<UserInfoDto>>({
+            profilePictureUrl: expect.any(String),
+        });
+
+        const resInfo = await request(app)
+            .get(`/user/users/info`)
+            .set('Authorization', accessToken);
+        expect(resInfo.status).toEqual(200);
+        expect(resInfo.body.payload).toMatchObject<Partial<UserInfoDto>>({
+            profilePictureUrl: resUpdate.body.payload.profilePictureUrl,
         });
     });
 });
