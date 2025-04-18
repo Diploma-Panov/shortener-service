@@ -59,7 +59,7 @@ export const ensureInfoIsSynchronized = async (accessToken: string): Promise<voi
 
 export const dataSynchronizationMiddleware = async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction,
 ) => {
     try {

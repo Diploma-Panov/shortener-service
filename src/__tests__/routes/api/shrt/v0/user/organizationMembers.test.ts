@@ -11,6 +11,7 @@ import {
     InviteMemberDto,
     OrganizationMemberDto,
     OrganizationMembersListDto,
+    UpdateMemberRolesDto,
 } from '../../../../../../dto/organizationMembers';
 import {
     generateRandomAlphabeticalString,
@@ -18,6 +19,7 @@ import {
     generateUniqueEmail,
 } from '../../../../../utils/dataUtils';
 import { MemberRole } from '../../../../../../auth/common';
+import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 
 const app: Express = createTestApplication(apiRouter);
 
@@ -136,6 +138,57 @@ describe('Authenticated organization members test', () => {
                     roles: expect.arrayContaining(dto.roles),
                     allowedUrls: expect.arrayContaining(dto.allowedUrls),
                     allowedAllUrls: dto.allowedAllUrls,
+                },
+            ]),
+            total: 2,
+            hasMore: false,
+            page: 0,
+            perPage: 10,
+        });
+    });
+
+    it('should update member roles', async () => {
+        const {
+            tokens: { accessToken: oldToken },
+        } = await signupRandomUser();
+
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await createOrganizationForUser(oldToken);
+
+        const {
+            member: { firstname, lastname, email, allowedAllUrls, allowedUrls },
+            model: { id },
+        } = await inviteMemberInOrganization(slug, accessToken); // Invited with ORGANIZATION_MEMBER role only
+
+        const dto: UpdateMemberRolesDto = {
+            newRoles: [
+                MemberRole.ORGANIZATION_MEMBER,
+                MemberRole.ORGANIZATION_URLS_MANAGER,
+                MemberRole.ORGANIZATION_MEMBERS_MANAGER,
+            ],
+        };
+        const res = await request(app)
+            .put(`/user/organizations/${slug}/members/${id}/roles`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual({
+            message: 'SUCCESS',
+        });
+
+        const members = await AuthServiceClient.getOrganizationMembers(accessToken, slug, {});
+
+        expect(members).toEqual<OrganizationMembersListDto>({
+            entries: expect.arrayContaining<OrganizationMemberDto>([
+                {
+                    id,
+                    fullName: firstname + ' ' + lastname,
+                    email: email,
+                    roles: expect.arrayContaining(dto.newRoles),
+                    allowedUrls: expect.arrayContaining(allowedUrls),
+                    allowedAllUrls: allowedAllUrls,
                 },
             ]),
             total: 2,

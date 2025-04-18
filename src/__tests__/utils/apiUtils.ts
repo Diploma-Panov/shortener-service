@@ -15,7 +15,11 @@ import { config } from '../../config';
 import { parseJwtToken } from '../../auth/jwt';
 import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations';
 import { updateOrCreateOrganization } from '../../components/dao/organizationDao';
-import { InviteMemberDto } from '../../dto/organizationMembers';
+import {
+    InviteMemberDto,
+    OrganizationMemberDto,
+    OrganizationMembersListDto,
+} from '../../dto/organizationMembers';
 import { MemberRole } from '../../auth/common';
 
 export const createTestApplication = (baseRouter: Router) => {
@@ -117,6 +121,7 @@ export const inviteMemberInOrganization = async (
 ): Promise<{
     member: InviteMemberDto;
     user: { tokens: TokenResponseDto; signupData: UserSignupDto; userId: number };
+    model: OrganizationMemberDto;
 }> => {
     const user = await signupRandomUser();
 
@@ -132,8 +137,18 @@ export const inviteMemberInOrganization = async (
 
     await AuthServiceClient.inviteNewOrganizationMember(accessToken, slug, member);
 
+    const members: OrganizationMembersListDto = await AuthServiceClient.getOrganizationMembers(
+        accessToken,
+        slug,
+        { q: 10000 },
+    );
+    const model: OrganizationMemberDto = members.entries.find(
+        (m) => m.email === user.signupData.username,
+    )!;
+
     return {
         member,
         user,
+        model,
     };
 };

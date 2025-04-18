@@ -4,6 +4,7 @@ import { parseJwtToken } from '../../../../../auth/jwt';
 import {
     InviteMemberDto,
     OrganizationMembersListDto,
+    UpdateMemberRolesDto,
 } from '../../../../../dto/organizationMembers';
 import { AuthServiceClient } from '../../../../../components/api/AuthServiceClient';
 import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
@@ -63,6 +64,45 @@ authenticatedOrganizationMembersRouter.post(
                 slug,
                 dto,
             );
+
+            res.json({
+                payloadType: 'MessageResponseDto',
+                payload,
+            });
+        } catch (e) {
+            next(e);
+        }
+    },
+);
+
+authenticatedOrganizationMembersRouter.put(
+    '/:memberId/roles',
+    async (
+        req: Request<
+            { slug: string; memberId: number },
+            AbstractResponseDto<MessageResponseDto>,
+            UpdateMemberRolesDto
+        >,
+        res,
+        next,
+    ) => {
+        try {
+            const { slug, memberId } = req.params;
+            const dto: UpdateMemberRolesDto = req.body;
+            const accessToken: string = req.headers.authorization ?? '';
+            const { userId } = parseJwtToken(accessToken);
+            logger.info(
+                `Received PUT /api/shrt/v0/user/organizations/${slug}/members/${memberId}/roles by userId=${userId} with dto=${JSON.stringify(
+                    dto,
+                )}`,
+            );
+            const payload: MessageResponseDto =
+                await AuthServiceClient.updateOrganizationMemberRoles(
+                    accessToken,
+                    slug,
+                    memberId,
+                    dto,
+                );
             res.json({
                 payloadType: 'MessageResponseDto',
                 payload,
