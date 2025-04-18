@@ -150,4 +150,37 @@ authenticatedOrganizationMembersRouter.put(
     },
 );
 
+authenticatedOrganizationMembersRouter.delete(
+    '/:memberId',
+    async (
+        req: Request<
+            { slug: string; memberId: number },
+            AbstractResponseDto<MessageResponseDto>,
+            void
+        >,
+        res,
+        next,
+    ) => {
+        try {
+            const { slug, memberId } = req.params;
+            const accessToken: string = req.headers.authorization ?? '';
+            const { userId } = parseJwtToken(accessToken);
+            logger.info(
+                `Received DELETE /api/shrt/v0/user/organizations/${slug}/members/${memberId} by userId=${userId}`,
+            );
+            const payload: MessageResponseDto = await AuthServiceClient.deleteOrganizationMember(
+                accessToken,
+                slug,
+                memberId,
+            );
+            res.json({
+                payloadType: 'MessageResponseDto',
+                payload,
+            });
+        } catch (e) {
+            next(e);
+        }
+    },
+);
+
 export { authenticatedOrganizationMembersRouter };

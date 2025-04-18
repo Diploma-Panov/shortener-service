@@ -22,6 +22,7 @@ import {
 import { MemberRole } from '../../../../../../auth/common';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 import { MessageResponseDto } from '../../../../../../dto/common/MessageResponseDto';
+import { OrganizationMember } from '../../../../../../db/model';
 
 const app: Express = createTestApplication(apiRouter);
 
@@ -255,5 +256,42 @@ describe('Authenticated organization members test', () => {
             allowedUrls: dto.newUrlsIds,
             allowedAllUrls: dto.allowedAllUrls,
         });
+    });
+
+    it('should delete organization member', async () => {
+        const {
+            tokens: { accessToken: oldToken },
+        } = await signupRandomUser();
+
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await createOrganizationForUser(oldToken);
+
+        const {
+            model: { id },
+        } = await inviteMemberInOrganization(slug, accessToken);
+
+        const { total: membersBefore } = await AuthServiceClient.getOrganizationMembers(
+            accessToken,
+            slug,
+            {},
+        );
+        expect(membersBefore).toEqual(2);
+
+        const res = await request(app)
+            .delete(`/user/organizations/${slug}/members/${id}`)
+            .set('Authorization', accessToken);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual<MessageResponseDto>({
+            message: 'SUCCESS',
+        });
+
+        const { total: membersAfter } = await AuthServiceClient.getOrganizationMembers(
+            accessToken,
+            slug,
+            {},
+        );
+        expect(membersAfter).toEqual(1);
     });
 });
