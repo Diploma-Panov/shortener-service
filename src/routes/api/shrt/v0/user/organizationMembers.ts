@@ -5,6 +5,7 @@ import {
     InviteMemberDto,
     OrganizationMembersListDto,
     UpdateMemberRolesDto,
+    UpdateMemberUrlsDto,
 } from '../../../../../dto/organizationMembers';
 import { AuthServiceClient } from '../../../../../components/api/AuthServiceClient';
 import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
@@ -98,6 +99,42 @@ authenticatedOrganizationMembersRouter.put(
             );
             const payload: MessageResponseDto =
                 await AuthServiceClient.updateOrganizationMemberRoles(
+                    accessToken,
+                    slug,
+                    memberId,
+                    dto,
+                );
+            res.json({
+                payloadType: 'MessageResponseDto',
+                payload,
+            });
+        } catch (e) {
+            next(e);
+        }
+    },
+);
+
+authenticatedOrganizationMembersRouter.put(
+    '/:memberId/urls',
+    async (
+        req: Request<
+            { slug: string; memberId: number },
+            AbstractResponseDto<MessageResponseDto>,
+            UpdateMemberUrlsDto
+        >,
+        res,
+        next,
+    ) => {
+        try {
+            const { slug, memberId } = req.params;
+            const dto: UpdateMemberUrlsDto = req.body;
+            const accessToken: string = req.headers.authorization ?? '';
+            const { userId } = parseJwtToken(accessToken);
+            logger.info(
+                `Received PUT /api/shrt/v0/user/organizations/${slug}/members/${memberId}/urls by userId=${userId} with dto=${dto}`,
+            );
+            const payload: MessageResponseDto =
+                await AuthServiceClient.updateOrganizationMemberUrls(
                     accessToken,
                     slug,
                     memberId,

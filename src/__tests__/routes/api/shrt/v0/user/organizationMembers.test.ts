@@ -12,6 +12,7 @@ import {
     OrganizationMemberDto,
     OrganizationMembersListDto,
     UpdateMemberRolesDto,
+    UpdateMemberUrlsDto,
 } from '../../../../../../dto/organizationMembers';
 import {
     generateRandomAlphabeticalString,
@@ -20,6 +21,7 @@ import {
 } from '../../../../../utils/dataUtils';
 import { MemberRole } from '../../../../../../auth/common';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
+import { MessageResponseDto } from '../../../../../../dto/common/MessageResponseDto';
 
 const app: Express = createTestApplication(apiRouter);
 
@@ -195,6 +197,63 @@ describe('Authenticated organization members test', () => {
             hasMore: false,
             page: 0,
             perPage: 10,
+        });
+    });
+
+    it('should update member allowed urls', async () => {
+        const {
+            tokens: { accessToken: oldToken },
+        } = await signupRandomUser();
+
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await createOrganizationForUser(oldToken);
+
+        const {
+            model: {
+                id,
+                email,
+                fullName,
+                roles,
+                allowedAllUrls: allowedAllUrlsBefore,
+                allowedUrls: allowedUrlsBefore,
+            },
+        } = await inviteMemberInOrganization(slug, accessToken);
+
+        const allMembersBefore: OrganizationMembersListDto =
+            await AuthServiceClient.getOrganizationMembers(accessToken, slug, {});
+        expect(allMembersBefore.entries).toContainEqual<OrganizationMemberDto>({
+            id,
+            fullName,
+            email,
+            roles,
+            allowedUrls: allowedUrlsBefore,
+            allowedAllUrls: allowedAllUrlsBefore,
+        });
+
+        const dto: UpdateMemberUrlsDto = {
+            allowedAllUrls: false,
+            newUrlsIds: [66, 77, 99],
+        };
+        const res = await request(app)
+            .put(`/user/organizations/${slug}/members/${id}/urls`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual<MessageResponseDto>({
+            message: 'SUCCESS',
+        });
+
+        const allMembersAfter: OrganizationMembersListDto =
+            await AuthServiceClient.getOrganizationMembers(accessToken, slug, {});
+        expect(allMembersAfter.entries).toContainEqual<OrganizationMemberDto>({
+            id,
+            fullName,
+            email,
+            roles,
+            allowedUrls: dto.newUrlsIds,
+            allowedAllUrls: dto.allowedAllUrls,
         });
     });
 });
