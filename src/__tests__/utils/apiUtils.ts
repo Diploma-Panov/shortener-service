@@ -15,6 +15,8 @@ import { config } from '../../config';
 import { parseJwtToken } from '../../auth/jwt';
 import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations';
 import { updateOrCreateOrganization } from '../../components/dao/organizationDao';
+import { InviteMemberDto } from '../../dto/organizationMembers';
+import { MemberRole } from '../../auth/common';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();
@@ -105,5 +107,33 @@ export const createOrganizationForUser = async (
     return {
         organization,
         tokens,
+    };
+};
+
+export const inviteMemberInOrganization = async (
+    slug: string,
+    accessToken: string,
+    partialModel?: Partial<InviteMemberDto>,
+): Promise<{
+    member: InviteMemberDto;
+    user: { tokens: TokenResponseDto; signupData: UserSignupDto; userId: number };
+}> => {
+    const user = await signupRandomUser();
+
+    const member: InviteMemberDto = {
+        allowedAllUrls: true,
+        allowedUrls: [],
+        email: user.signupData.username,
+        firstname: generateRandomAlphabeticalString(20),
+        lastname: generateRandomAlphabeticalString(20),
+        roles: [MemberRole.ORGANIZATION_MEMBER],
+        ...partialModel,
+    };
+
+    await AuthServiceClient.inviteNewOrganizationMember(accessToken, slug, member);
+
+    return {
+        member,
+        user,
     };
 };
