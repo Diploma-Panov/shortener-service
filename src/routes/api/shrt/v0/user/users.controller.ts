@@ -4,9 +4,9 @@ import {
     UpdateUserInfoDto,
     UpdateUserProfilePictureDto,
     UserInfoDto,
-} from '../../../../../dto/users';
+} from '../../../../../dto/users.views';
 import { AuthServiceClient } from '../../../../../components/api/AuthServiceClient';
-import { updateOrCreateUser } from '../../../../../components/dao/userDao';
+import { updateOrCreateUser } from '../../../../../components/dao/user.dao';
 import { parseJwtToken } from '../../../../../auth/jwt';
 
 const authenticatedUsersRouter = Router();

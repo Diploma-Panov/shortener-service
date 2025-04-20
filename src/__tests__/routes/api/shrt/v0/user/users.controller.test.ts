@@ -6,7 +6,7 @@ import {
     UpdateUserInfoDto,
     UpdateUserProfilePictureDto,
     UserInfoDto,
-} from '../../../../../../dto/users';
+} from '../../../../../../dto/users.views';
 import {
     generateRandomAlphabeticalString,
     generateRandomAlphanumericalString,

@@ -8,10 +8,10 @@ import {
     OrganizationsListDto,
     UpdateOrganizationAvatarDto,
     UpdateOrganizationInfoDto,
-} from '../../../../../dto/organizations';
-import { OrganizationScope } from '../../../../../kafka/dto/userUpdates';
+} from '../../../../../dto/organizations.views';
+import { OrganizationScope } from '../../../../../kafka/dto/userUpdates.views';
 import { TokenResponseDto } from '../../../../../dto/common/TokenResponseDto';
-import { updateOrCreateOrganization } from '../../../../../components/dao/organizationDao';
+import { updateOrCreateOrganization } from '../../../../../components/dao/organization.dao';
 
 const authenticatedOrganizationsRouter = Router();
 

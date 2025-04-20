@@ -1,7 +1,7 @@
 import express from 'express';
 import { config } from './config';
 import { apiRouter } from './routes/api/shrt/v0';
-import { startKafkaConsumer } from './kafka/userUpdatesConsumer';
+import { startKafkaConsumer } from './kafka/userUpdatesConsumer.kafka';
 
 const app = express();
 

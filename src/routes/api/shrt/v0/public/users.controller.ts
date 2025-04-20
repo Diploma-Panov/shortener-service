@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { logger } from '../../../../../config/logger';
-import { UserLoginDto, UserSignupDto } from '../../../../../dto/users';
+import { UserLoginDto, UserSignupDto } from '../../../../../dto/users.views';
 import { TokenResponseDto } from '../../../../../dto/common/TokenResponseDto';
-import { loginViaAuthService, signupNewUser } from '../../../../../components/service/userService';
+import {
+    loginViaAuthService,
+    signupNewUser,
+} from '../../../../../components/service/users.service';
 import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
 import { AuthServiceClient } from '../../../../../components/api/AuthServiceClient';
 

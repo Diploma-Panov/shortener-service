@@ -4,7 +4,7 @@ import {
     signupRandomUser,
 } from '../../../../../utils/apiUtils';
 import request from 'supertest';
-import { UserLoginDto, UserSignupDto } from '../../../../../../dto/users';
+import { UserLoginDto, UserSignupDto } from '../../../../../../dto/users.views';
 import {
     generateCompliantPassword,
     generateRandomAlphabeticalString,

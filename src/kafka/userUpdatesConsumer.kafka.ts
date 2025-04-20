@@ -5,17 +5,17 @@ import {
     KafkaOrganizationUpdateDto,
     KafkaUserUpdateDto,
     OrganizationScope,
-} from './dto/userUpdates';
+} from './dto/userUpdates.views';
 import { logger } from '../config/logger';
-import { updateOrCreateUser } from '../components/dao/userDao';
+import { updateOrCreateUser } from '../components/dao/user.dao';
 import {
     deleteAbsentOrganizationsByCreatorUserId,
     updateOrCreateOrganization,
-} from '../components/dao/organizationDao';
+} from '../components/dao/organization.dao';
 import {
     deleteAbsentOrganizationMembersByUserId,
     updateOrCreateOrganizationMember,
-} from '../components/dao/organizationMemberDao';
+} from '../components/dao/organizationMember.dao';
 
 const kafka = new Kafka({
     clientId: 'user-updates-consumer',

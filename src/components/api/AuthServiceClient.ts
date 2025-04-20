@@ -5,7 +5,7 @@ import {
     OrganizationsListDto,
     UpdateOrganizationAvatarDto,
     UpdateOrganizationInfoDto,
-} from '../../dto/organizations';
+} from '../../dto/organizations.views';
 import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 import axios, { AxiosRequestConfig } from 'axios';
 import { AuthServiceApiError } from '../../exception/AuthServiceApiError';
@@ -15,7 +15,7 @@ import {
     OrganizationMembersListDto,
     UpdateMemberRolesDto,
     UpdateMemberUrlsDto,
-} from '../../dto/organizationMembers';
+} from '../../dto/organizationMembers.views';
 import { MessageResponseDto } from '../../dto/common/MessageResponseDto';
 import {
     UpdateUserInfoDto,
@@ -23,11 +23,11 @@ import {
     UserInfoDto,
     UserLoginDto,
     UserSignupDto,
-} from '../../dto/users';
+} from '../../dto/users.views';
 import { config } from '../../config';
 import { logger } from '../../config/logger';
 import { ShortCodeResponseDto } from '../../dto/common/ShortCodeResponseDto';
-import { OrganizationScope } from '../../kafka/dto/userUpdates';
+import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
 
 const API_AUTH_BASE = '/api/auth/v0';
 const API_AUTH_USER = API_AUTH_BASE + '/user';

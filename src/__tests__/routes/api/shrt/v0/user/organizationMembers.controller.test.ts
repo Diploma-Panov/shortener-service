@@ -13,7 +13,7 @@ import {
     OrganizationMembersListDto,
     UpdateMemberRolesDto,
     UpdateMemberUrlsDto,
-} from '../../../../../../dto/organizationMembers';
+} from '../../../../../../dto/organizationMembers.views';
 import {
     generateRandomAlphabeticalString,
     generateRandomAlphanumericalString,
@@ -22,7 +22,6 @@ import {
 import { MemberRole } from '../../../../../../auth/common';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 import { MessageResponseDto } from '../../../../../../dto/common/MessageResponseDto';
-import { OrganizationMember } from '../../../../../../db/model';
 
 const app: Express = createTestApplication(apiRouter);
 

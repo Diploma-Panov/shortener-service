@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { UserSignupDto } from '../../dto/users';
+import { UserSignupDto } from '../../dto/users.views';
 import {
     generateCompliantPassword,
     generateRandomAlphabeticalString,
@@ -8,18 +8,18 @@ import {
     generateUniqueEmail,
     generateUniqueSlug,
 } from './dataUtils';
-import { loginViaAuthService, signupNewUser } from '../../components/service/userService';
+import { loginViaAuthService, signupNewUser } from '../../components/service/users.service';
 import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../components/api/AuthServiceClient';
 import { config } from '../../config';
 import { parseJwtToken } from '../../auth/jwt';
-import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations';
-import { updateOrCreateOrganization } from '../../components/dao/organizationDao';
+import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations.views';
+import { updateOrCreateOrganization } from '../../components/dao/organization.dao';
 import {
     InviteMemberDto,
     OrganizationMemberDto,
     OrganizationMembersListDto,
-} from '../../dto/organizationMembers';
+} from '../../dto/organizationMembers.views';
 import { MemberRole } from '../../auth/common';
 
 export const createTestApplication = (baseRouter: Router) => {

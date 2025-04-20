@@ -6,7 +6,7 @@ import {
     OrganizationMembersListDto,
     UpdateMemberRolesDto,
     UpdateMemberUrlsDto,
-} from '../../../../../dto/organizationMembers';
+} from '../../../../../dto/organizationMembers.views';
 import { AuthServiceClient } from '../../../../../components/api/AuthServiceClient';
 import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
 import { MessageResponseDto } from '../../../../../dto/common/MessageResponseDto';

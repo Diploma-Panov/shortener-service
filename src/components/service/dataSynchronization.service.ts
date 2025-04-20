@@ -1,14 +1,17 @@
 import { logger } from '../../config/logger';
 import { parseJwtToken } from '../../auth/jwt';
-import { updateOrCreateUser } from '../dao/userDao';
-import { OrganizationDto, OrganizationsListDto } from '../../dto/organizations';
+import { updateOrCreateUser } from '../dao/user.dao';
+import { OrganizationDto, OrganizationsListDto } from '../../dto/organizations.views';
 import { AuthServiceClient } from '../api/AuthServiceClient';
 import { MemberRole, OrganizationAccessEntry } from '../../auth/common';
-import { updateOrCreateOrganization } from '../dao/organizationDao';
-import { OrganizationMemberDto, OrganizationMembersListDto } from '../../dto/organizationMembers';
-import { updateOrCreateOrganizationMember } from '../dao/organizationMemberDao';
+import { updateOrCreateOrganization } from '../dao/organization.dao';
+import {
+    OrganizationMemberDto,
+    OrganizationMembersListDto,
+} from '../../dto/organizationMembers.views';
+import { updateOrCreateOrganizationMember } from '../dao/organizationMember.dao';
 import { NextFunction, Request, Response } from 'express';
-import { OrganizationScope } from '../../kafka/dto/userUpdates';
+import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
 
 export const ensureInfoIsSynchronized = async (accessToken: string): Promise<void> => {
     logger.debug(`Parsing received JWT token ${accessToken}`);

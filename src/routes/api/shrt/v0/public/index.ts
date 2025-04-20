@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { platformRouter } from './platform';
-import { publicUsersRouter } from './users';
+import { platformRouter } from './platform.controller';
+import { publicUsersRouter } from './users.controller';
 
 const publicRouter = Router();
 

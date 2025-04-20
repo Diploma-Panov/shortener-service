@@ -5,7 +5,7 @@ import {
 } from '../../../../../utils/apiUtils';
 import { apiRouter } from '../../../../../../routes/api/shrt/v0';
 import request from 'supertest';
-import { OrganizationScope } from '../../../../../../kafka/dto/userUpdates';
+import { OrganizationScope } from '../../../../../../kafka/dto/userUpdates.views';
 import {
     CreateOrganizationDto,
     OrganizationDto,
@@ -13,7 +13,7 @@ import {
     OrganizationType,
     UpdateOrganizationAvatarDto,
     UpdateOrganizationInfoDto,
-} from '../../../../../../dto/organizations';
+} from '../../../../../../dto/organizations.views';
 import { ServiceErrorType } from '../../../../../../exception/errorHandling';
 import {
     generateRandomAlphabeticalString,
