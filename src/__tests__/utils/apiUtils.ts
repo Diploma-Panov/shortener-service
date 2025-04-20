@@ -13,7 +13,11 @@ import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../components/api/AuthServiceClient';
 import { config } from '../../config';
 import { parseJwtToken } from '../../auth/jwt';
-import { CreateOrganizationDto, OrganizationDto } from '../../dto/organizations.views';
+import {
+    CreateOrganizationDto,
+    OrganizationDto,
+    OrganizationsListDto,
+} from '../../dto/organizations.views';
 import { updateOrCreateOrganization } from '../../components/dao/organization.dao';
 import {
     InviteMemberDto,
@@ -21,6 +25,7 @@ import {
     OrganizationMembersListDto,
 } from '../../dto/organizationMembers.views';
 import { MemberRole } from '../../auth/common';
+import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();
@@ -30,6 +35,7 @@ export const createTestApplication = (baseRouter: Router) => {
 };
 
 export const signupRandomUser = async (): Promise<{
+    organization: OrganizationDto;
     signupData: UserSignupDto;
     tokens: TokenResponseDto;
     userId: number;
@@ -46,7 +52,15 @@ export const signupRandomUser = async (): Promise<{
     };
     const tokens: TokenResponseDto = await signupNewUser(signupData);
     const userId: number = parseJwtToken(tokens.accessToken).userId;
+
+    const organizations: OrganizationsListDto = await AuthServiceClient.getUserOrganizations(
+        tokens.accessToken,
+        { scope: OrganizationScope.SHORTENER_SCOPE },
+    );
+    const organization: OrganizationDto = organizations.entries[0];
+
     return {
+        organization,
         signupData,
         tokens,
         userId,
