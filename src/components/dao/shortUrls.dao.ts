@@ -26,11 +26,14 @@ export const updateUrlWithNewStateById = async (
     id: number,
     state: ShortUrlState,
 ): Promise<ShortUrl | null> => {
-    const [updated] = await db
-        .update(ShortUrls)
-        .set({ shortUrlState: state })
-        .where(eq(ShortUrls.id, id))
-        .returning();
+    const updated = await db.transaction(async (tx) => {
+        const [row] = await tx
+            .update(ShortUrls)
+            .set({ shortUrlState: state })
+            .where(eq(ShortUrls.id, id))
+            .returning();
+        return row;
+    });
     if (!updated) {
         return null;
     }

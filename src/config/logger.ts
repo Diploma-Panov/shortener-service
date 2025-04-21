@@ -3,11 +3,10 @@ import { config } from './index';
 
 log4js.configure({
     appenders: {
-        console: { type: 'console' },
-        appFile: { type: 'file', filename: 'logs/app.log' },
+        out: { type: 'stdout' },
     },
     categories: {
-        default: { appenders: ['console', 'appFile'], level: config.app.logLevel },
+        default: { appenders: ['out'], level: config.app.logLevel },
     },
 });
 

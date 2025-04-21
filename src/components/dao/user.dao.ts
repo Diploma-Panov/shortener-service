@@ -13,11 +13,15 @@ export const findUserByIdThrowable = async (id: number): Promise<User> => {
 };
 
 export const createNewUser = async (user: User): Promise<void> => {
-    await db.insert(Users).values(user);
+    await db.transaction(async (tx) => {
+        await tx.insert(Users).values(user);
+    });
 };
 
 export const updateUserData = async (user: User): Promise<void> => {
-    await db.update(Users).set(user).where(eq(Users.id, user.id));
+    await db.transaction(async (tx) => {
+        await tx.update(Users).set(user).where(eq(Users.id, user.id));
+    });
 };
 
 export const doesUserExistById = async (id: number): Promise<boolean> => {

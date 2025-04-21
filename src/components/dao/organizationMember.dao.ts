@@ -43,16 +43,20 @@ export const findMemberByUserIdAndOrganizationSlugThrowable = async (
 export const createNewOrganizationMember = async (
     organizationMember: OrganizationMember,
 ): Promise<void> => {
-    await db.insert(OrganizationMembers).values(organizationMember);
+    await db.transaction(async (tx) => {
+        await tx.insert(OrganizationMembers).values(organizationMember);
+    });
 };
 
 export const updateOrganizationMemberData = async (
     organizationMember: OrganizationMember,
 ): Promise<void> => {
-    await db
-        .update(OrganizationMembers)
-        .set(organizationMember)
-        .where(eq(OrganizationMembers.id, organizationMember.id));
+    await db.transaction(async (tx) => {
+        await tx
+            .update(OrganizationMembers)
+            .set(organizationMember)
+            .where(eq(OrganizationMembers.id, organizationMember.id));
+    });
 };
 
 export const doesOrganizationMemberExistById = async (id: number): Promise<boolean> => {
@@ -77,12 +81,14 @@ export const deleteAbsentOrganizationMembersByUserId = async (
     allowedIds: number[],
     memberUserId: number,
 ): Promise<void> => {
-    await db
-        .delete(OrganizationMembers)
-        .where(
-            and(
-                eq(OrganizationMembers.memberUserId, BigInt(memberUserId)),
-                notInArray(OrganizationMembers.id, allowedIds),
-            ),
-        );
+    await db.transaction(async (tx) => {
+        await tx
+            .delete(OrganizationMembers)
+            .where(
+                and(
+                    eq(OrganizationMembers.memberUserId, BigInt(memberUserId)),
+                    notInArray(OrganizationMembers.id, allowedIds),
+                ),
+            );
+    });
 };

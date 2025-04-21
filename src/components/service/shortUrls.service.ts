@@ -129,7 +129,10 @@ export const createNewShortUrlForOrganization = async (
         shortUrlType: ShortUrlType.REGULAR,
     };
 
-    const [inserted] = await db.insert(ShortUrls).values(newUrl).returning();
+    const inserted: ShortUrl = await db.transaction(async (tx) => {
+        const [row] = await tx.insert(ShortUrls).values(newUrl).returning();
+        return row;
+    });
 
     let updatePermissionsDto: UpdateMemberUrlsDto;
     if (currentMemberUrls.allowedAllUrls) {

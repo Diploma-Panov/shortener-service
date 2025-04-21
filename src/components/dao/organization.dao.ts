@@ -4,11 +4,18 @@ import { Organizations } from '../../db/schema';
 import { and, count, eq, notInArray } from 'drizzle-orm';
 
 export const createNewOrganization = async (organization: Organization): Promise<void> => {
-    await db.insert(Organizations).values(organization);
+    await db.transaction(async (tx) => {
+        await tx.insert(Organizations).values(organization);
+    });
 };
 
 export const updateOrganizationData = async (organization: Organization): Promise<void> => {
-    await db.update(Organizations).set(organization).where(eq(Organizations.id, organization.id));
+    await db.transaction(async (tx) => {
+        await tx
+            .update(Organizations)
+            .set(organization)
+            .where(eq(Organizations.id, organization.id));
+    });
 };
 
 export const doesOrganizationExistById = async (id: number): Promise<boolean> => {
@@ -31,12 +38,14 @@ export const deleteAbsentOrganizationsByCreatorUserId = async (
     allowedIds: number[],
     creatorUserId: number,
 ): Promise<void> => {
-    await db
-        .delete(Organizations)
-        .where(
-            and(
-                eq(Organizations.creatorUserId, BigInt(creatorUserId)),
-                notInArray(Organizations.id, allowedIds),
-            ),
-        );
+    await db.transaction(async (tx) => {
+        await tx
+            .delete(Organizations)
+            .where(
+                and(
+                    eq(Organizations.creatorUserId, BigInt(creatorUserId)),
+                    notInArray(Organizations.id, allowedIds),
+                ),
+            );
+    });
 };

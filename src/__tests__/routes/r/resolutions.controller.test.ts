@@ -7,6 +7,9 @@ import { resolutionsRouter } from '../../../routes/api/shrt/v0/r/resolutions.con
 import request from 'supertest';
 import { ErrorResponseDto } from '../../../dto/common/errors';
 import { config } from '../../../config';
+import { apiRouter } from '../../../routes/api/shrt/v0';
+import { ChangeUrlStateDto } from '../../../dto/shortUrls.views';
+import { ShortUrlState } from '../../../db/model';
 
 const app = createTestApplication(resolutionsRouter);
 
@@ -31,9 +34,18 @@ describe('Resolutions test', () => {
             organization: { slug },
         } = await signupRandomUser();
         const {
-            url: { shortUrl, originalUrl },
+            url: { shortUrl, originalUrl, id },
         } = await createShortUrlForOrganization(slug, accessToken);
         const code: string = shortUrl.substring(config.urls.baseUrl.length + 1);
+
+        const dto: ChangeUrlStateDto = {
+            newState: ShortUrlState.ACTIVE,
+        };
+        await request(createTestApplication(apiRouter))
+            .put(`/user/organizations/${slug}/urls/${id}`)
+            .set('Authorization', accessToken)
+            .send(dto);
+
         const res = await request(app).get(`/${code}`);
         expect(res.status).toEqual(302);
         expect(res.headers.location).toEqual(originalUrl);
