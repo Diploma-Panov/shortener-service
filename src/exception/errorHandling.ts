@@ -83,5 +83,16 @@ export const errorHandlerMiddleware = (
             ],
         };
         res.status(404).json(payload);
+    } else {
+        const payload: ErrorResponseDto = {
+            errors: [
+                {
+                    errorType: ServiceErrorType.INTERNAL_ERROR,
+                    errorMessage: error.message,
+                    errorClass: 'Error',
+                },
+            ],
+        };
+        res.status(500).json(payload);
     }
 };

@@ -30,28 +30,7 @@ import {
 } from '../../../../../db/model';
 import { findMemberByIdThrowable } from '../../../../../components/dao/organizationMember.dao';
 import { findUserByIdThrowable } from '../../../../../components/dao/user.dao';
-import { AuthError } from '../../../../../exception/AuthError';
-import { ServiceErrorType } from '../../../../../exception/errorHandling';
-
-const urlAccessGuard = (
-    req: Request<{ slug: string; urlId: number }>,
-    _res: Response,
-    next: NextFunction,
-) => {
-    const { slug, urlId } = req.params;
-    const { userId, organizations } = parseJwtToken(req.headers.authorization ?? '');
-    const o: OrganizationAccessEntry = organizations.find((o) => o.slug === slug)!;
-
-    if (o.allowedAllUrls || o.allowedUrls.includes(Number(urlId))) {
-        next();
-        return;
-    }
-
-    throw new AuthError(
-        `User ${userId} does not have access to url ${urlId} in organization ${slug}`,
-        ServiceErrorType.ACCESS_DENIED,
-    );
-};
+import { urlAccessGuard } from '../../../../../auth/urlAccessGuard';
 
 const authenticatedShortUrlsRouter = Router({ mergeParams: true });
 

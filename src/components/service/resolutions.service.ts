@@ -13,11 +13,13 @@ export const recordResolution = async (code: string, ip: string): Promise<void> 
     const now = new Date();
     const date = now.toISOString().slice(0, 10);
     const hour = now.toISOString().slice(0, 13);
+    const minute = now.toISOString().slice(0, 16);
     const month = now.toISOString().slice(0, 7);
 
     const updates = [
         { sk: `DATE#${date}` },
         { sk: `HOUR#${hour}` },
+        { sk: `MINUTE#${minute}` },
         { sk: `MONTH#${month}` },
         { sk: `COUNTRY#${country}` },
         ...(city ? [{ sk: `CITY#${city}` }] : []),
