@@ -8,6 +8,7 @@ import { MemberRole, OrganizationAccessEntry } from '../../../../../../auth/comm
 import request from 'supertest';
 import { apiRouter } from '../../../../../../routes/api/shrt/v0';
 import {
+    ChangeUrlStateDto,
     CreateShortUrlDto,
     ShortUrlDto,
     ShortUrlsListDto,
@@ -267,5 +268,38 @@ describe('Short URLs controller test', () => {
             page: 0,
             perPage: 10,
         });
+    });
+
+    it('should change url state', async () => {
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await signupRandomUser();
+
+        const { url } = await createShortUrlForOrganization(slug, accessToken);
+
+        const dto: ChangeUrlStateDto = {
+            newState: ShortUrlState.ACTIVE,
+        };
+        const res = await request(app)
+            .put(`/user/organizations/${slug}/urls/${url.id}`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual<ShortUrlDto>({
+            id: url.id,
+            creatorName: expect.any(String),
+            originalUrl: url.originalUrl,
+            shortUrl: url.shortUrl,
+            state: ShortUrlState.ACTIVE,
+            type: url.shortUrlType as ShortUrlType,
+            tags: url.tags,
+        });
+
+        const info = await request(app)
+            .get(`/user/organizations/${slug}/urls/${url.id}`)
+            .set('Authorization', accessToken);
+        expect(info.status).toEqual(200);
+        expect(info.body.payload).toEqual<ShortUrlDto>(res.body.payload);
     });
 });

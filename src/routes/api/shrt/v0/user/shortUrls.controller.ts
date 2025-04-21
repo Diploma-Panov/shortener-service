@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import {
+    ChangeUrlStateDto,
     CreateShortUrlDto,
     ShortUrlDto,
     ShortUrlsListDto,
@@ -16,7 +17,10 @@ import { MemberPermission, OrganizationAccessEntry } from '../../../../../auth/c
 import { logger } from '../../../../../config/logger';
 import { TokenResponseDto } from '../../../../../dto/common/TokenResponseDto';
 import { validationMiddleware } from '../../../../../middleware/validation.middleware';
-import { findUrlByIdThrowable } from '../../../../../components/dao/shortUrls.dao';
+import {
+    findUrlByIdThrowable,
+    updateUrlWithNewStateById,
+} from '../../../../../components/dao/shortUrls.dao';
 import {
     OrganizationMember,
     ShortUrl,
@@ -165,6 +169,56 @@ authenticatedShortUrlsRouter.post(
             });
             res.json({
                 payloadType: 'TokenResponseDto',
+                payload,
+            });
+        } catch (e) {
+            next(e);
+        }
+    },
+);
+
+authenticatedShortUrlsRouter.put(
+    '/:urlId',
+    urlAccessGuard,
+    permissionsGuard(MemberPermission.MANAGE_URLS),
+    async (
+        req: Request<
+            { slug: string; urlId: number },
+            AbstractResponseDto<ShortUrlDto>,
+            ChangeUrlStateDto
+        >,
+        res,
+        next,
+    ) => {
+        try {
+            const { slug, urlId } = req.params;
+            const { userId } = parseJwtToken(req.headers.authorization ?? '');
+            const dto: ChangeUrlStateDto = req.body;
+            logger.info(
+                `Received PUT /api/shrt/v0/user/organizations/${slug}/urls/${urlId} by userId=${userId} with dto=${JSON.stringify(
+                    dto,
+                )}`,
+            );
+            const url = (await updateUrlWithNewStateById(urlId, dto.newState))!;
+            const member: OrganizationMember = await findMemberByIdThrowable(
+                Number(url.creatorMemberId),
+            );
+            const user: User = await findUserByIdThrowable(Number(member.memberUserId));
+            const creatorName: string = member.displayFirstname
+                ? member.displayFirstname +
+                  (member.displayLastname ? ' ' + member.displayLastname : '')
+                : user.firstname + (user.lastname ? ' ' + user.lastname : '');
+            const payload: ShortUrlDto = {
+                id: url.id,
+                creatorName,
+                originalUrl: url.originalUrl,
+                shortUrl: url.shortUrl,
+                state: url.shortUrlState as ShortUrlState,
+                type: url.shortUrlType as ShortUrlType,
+                tags: url.tags,
+            };
+            res.json({
+                payloadType: 'ShortUrlDto',
                 payload,
             });
         } catch (e) {

@@ -1,6 +1,6 @@
 import { PagedResponse } from './common/PagedResponse';
 import { ShortUrlState, ShortUrlType } from '../db/model';
-import { IsDefined, IsNotEmpty, IsUrl } from 'class-validator';
+import { IsDefined, IsEnum, IsNotEmpty, IsUrl } from 'class-validator';
 
 export interface ShortUrlsSearchParams {
     p?: number;
@@ -33,4 +33,11 @@ export class CreateShortUrlDto {
 
     @IsDefined()
     tags: string[];
+}
+
+export class ChangeUrlStateDto {
+    @IsDefined()
+    @IsNotEmpty()
+    @IsEnum(ShortUrlState)
+    newState: ShortUrlState;
 }

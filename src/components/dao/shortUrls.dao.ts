@@ -1,4 +1,4 @@
-import { ShortUrl } from '../../db/model';
+import { ShortUrl, ShortUrlState } from '../../db/model';
 import { db } from '../../db/drizzle';
 import { ShortUrls } from '../../db/schema';
 import { eq } from 'drizzle-orm';
@@ -10,4 +10,19 @@ export const findUrlByIdThrowable = async (id: number): Promise<ShortUrl> => {
         throw new NotFoundError('ShortUrl', 'id', id);
     }
     return found;
+};
+
+export const updateUrlWithNewStateById = async (
+    id: number,
+    state: ShortUrlState,
+): Promise<ShortUrl | null> => {
+    const [updated] = await db
+        .update(ShortUrls)
+        .set({ shortUrlState: state })
+        .where(eq(ShortUrls.id, id))
+        .returning();
+    if (!updated) {
+        return null;
+    }
+    return updated;
 };
