@@ -11,7 +11,7 @@ import {
     generateRandomAlphabeticalString,
     generateRandomAlphanumericalString,
     generateUniqueEmail,
-} from '../../../../../utils/dataUtils';
+} from '../../../../../../utils/dataUtils';
 
 const app: Express = createTestApplication(apiRouter);
 

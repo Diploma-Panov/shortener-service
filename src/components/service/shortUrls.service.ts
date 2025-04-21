@@ -1,19 +1,36 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { db } from '../../db/drizzle';
-import { ShortUrlDto, ShortUrlsListDto, ShortUrlsSearchParams } from '../../dto/shortUrls.views';
+import {
+    CreateShortUrlDto,
+    ShortUrlDto,
+    ShortUrlsListDto,
+    ShortUrlsSearchParams,
+} from '../../dto/shortUrls.views';
 import { ShortUrls, Users, OrganizationMembers, Organizations } from '../../db/schema';
+import { OrganizationMember, ShortUrlState, ShortUrlType } from '../../db/model';
+import { findMemberByUserIdAndOrganizationSlugThrowable } from '../dao/organizationMember.dao';
+import { config } from '../../config';
+import { generateRandomAlphabeticalString } from '../../utils/dataUtils';
+import { AuthServiceClient } from '../api/AuthServiceClient';
+import { UpdateMemberUrlsDto } from '../../dto/organizationMembers.views';
+import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 
 export async function getShortUrlsListBySlug(
     slug: string,
     params: ShortUrlsSearchParams,
+    allowedUrls: number[],
+    allowedAllUrls: boolean,
 ): Promise<ShortUrlsListDto> {
     const { p = 0, q = 10, tags, s, t, sb, dir } = params;
 
     const orderByField = sb === 'shortUrl' ? ShortUrls.shortUrl : ShortUrls.originalUrl;
     const orderDirection = dir === 'desc' ? 'DESC' : 'ASC';
-    const orderExpr = sql`${orderByField} ${orderDirection}`;
 
     const whereClauses = [eq(Organizations.slug, slug)];
+
+    if (!allowedAllUrls) {
+        whereClauses.push(inArray(ShortUrls.id, allowedUrls));
+    }
 
     if (tags?.length) {
         const tagClauses = tags.map((tag) => sql`${tag} = ANY(${ShortUrls.tags})`);
@@ -29,8 +46,9 @@ export async function getShortUrlsListBySlug(
     }
 
     const [totalRow] = await db
-        .select({ count: sql<number>`count(*)` })
+        .select({ count: sql<number>`count(*)::int` })
         .from(ShortUrls)
+        .innerJoin(Organizations, eq(Organizations.id, ShortUrls.owningOrganizationId))
         .where(and(...whereClauses));
 
     const rows = await db
@@ -52,30 +70,33 @@ export async function getShortUrlsListBySlug(
         })
         .from(ShortUrls)
         .innerJoin(Organizations, eq(Organizations.id, ShortUrls.owningOrganizationId))
-        .innerJoin(Users, eq(Users.id, ShortUrls.creatorMemberId))
         .leftJoin(
             OrganizationMembers,
             and(
-                eq(OrganizationMembers.memberUserId, Users.id),
+                eq(OrganizationMembers.id, ShortUrls.creatorMemberId),
                 eq(OrganizationMembers.organizationId, Organizations.id),
             ),
         )
+        .leftJoin(Users, eq(Users.id, OrganizationMembers.memberUserId))
         .where(and(...whereClauses))
-        .orderBy(orderExpr)
+        .orderBy(orderDirection === 'ASC' ? asc(orderByField) : desc(orderByField))
         .limit(q)
         .offset(p * q);
 
     const entries: ShortUrlDto[] = rows.map((u) => {
-        const first = u.creatorDisplay?.firstname || u.creatorUser.firstname;
-        const last = u.creatorDisplay?.lastname || u.creatorUser.lastname || '';
-        const creatorName = last ? `${first} ${last}` : first;
+        const first = u.creatorDisplay?.firstname || u.creatorUser?.firstname;
+        const last = u.creatorDisplay?.lastname || u.creatorUser?.lastname || '';
+        let creatorName: string = '';
+        if (first) {
+            creatorName = last ? `${first} ${last}` : first;
+        }
         return {
             id: u.id,
             creatorName,
             originalUrl: u.originalUrl,
             shortUrl: u.shortUrl,
-            state: u.state,
-            type: u.type,
+            state: u.state as ShortUrlState,
+            type: u.type as ShortUrlType,
             tags: u.tags,
         };
     });
@@ -88,3 +109,39 @@ export async function getShortUrlsListBySlug(
         entries,
     };
 }
+
+export const createNewShortUrlForOrganization = async (
+    slug: string,
+    userId: number,
+    dto: CreateShortUrlDto,
+    currentMemberUrls: { allowedAllUrls: boolean; allowedUrls: number[] },
+): Promise<TokenResponseDto> => {
+    const member: OrganizationMember = await findMemberByUserIdAndOrganizationSlugThrowable(
+        slug,
+        BigInt(userId),
+    );
+    const newUrl = {
+        ...dto,
+        creatorMemberId: BigInt(member.id),
+        owningOrganizationId: BigInt(member.organizationId),
+        shortUrl: config.urls.baseUrl + `/${generateRandomAlphabeticalString(6)}`,
+        shortUrlState: ShortUrlState.PENDING,
+        shortUrlType: ShortUrlType.REGULAR,
+    };
+
+    const [inserted] = await db.insert(ShortUrls).values(newUrl).returning({ id: ShortUrls.id });
+
+    let updatePermissionsDto: UpdateMemberUrlsDto;
+    if (currentMemberUrls.allowedAllUrls) {
+        updatePermissionsDto = {
+            newUrlsIds: [],
+            allowedAllUrls: true,
+        };
+    } else {
+        updatePermissionsDto = {
+            newUrlsIds: [...currentMemberUrls.allowedUrls, inserted.id],
+            allowedAllUrls: false,
+        };
+    }
+    return await AuthServiceClient.updateMemberUrlsBySystem(member.id, updatePermissionsDto);
+};

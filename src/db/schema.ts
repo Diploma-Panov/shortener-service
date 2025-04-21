@@ -6,6 +6,7 @@ import {
     serial,
     text,
     timestamp,
+    uniqueIndex,
     varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
@@ -29,17 +30,26 @@ export const Organizations = pgTable('organizations', {
     description: text('description'),
 });
 
-export const OrganizationMembers = pgTable('organization_members', {
-    id: serial('id').primaryKey(),
-    memberUserId: bigint('member_user_id', { mode: 'bigint' })
-        .notNull()
-        .references(() => Users.id, { onDelete: 'cascade' }),
-    organizationId: bigint('organization_id', { mode: 'bigint' })
-        .notNull()
-        .references(() => Organizations.id, { onDelete: 'cascade' }),
-    displayFirstname: varchar('display_firstname', { length: 255 }),
-    displayLastname: varchar('display_lastname', { length: 255 }),
-});
+export const OrganizationMembers = pgTable(
+    'organization_members',
+    {
+        id: serial('id').primaryKey(),
+        memberUserId: bigint('member_user_id', { mode: 'bigint' })
+            .notNull()
+            .references(() => Users.id, { onDelete: 'cascade' }),
+        organizationId: bigint('organization_id', { mode: 'bigint' })
+            .notNull()
+            .references(() => Organizations.id, { onDelete: 'cascade' }),
+        displayFirstname: varchar('display_firstname', { length: 255 }),
+        displayLastname: varchar('display_lastname', { length: 255 }),
+    },
+    (table) => ({
+        uniqueUserPerOrg: uniqueIndex('organization_members_user_org_unique').on(
+            table.organizationId,
+            table.memberUserId,
+        ),
+    }),
+);
 
 export const ShortUrlStatePgEnum = pgEnum('short_url_state', SHORT_URL_STATES);
 export const ShortUrlTypePgEnum = pgEnum('short_url_type', SHORT_URL_TYPES);
@@ -55,9 +65,7 @@ const textArray = customType<{
 
 export const ShortUrls = pgTable('short_urls', {
     id: serial('id').primaryKey(),
-    creatorMemberId: bigint('creator_member_id', { mode: 'bigint' })
-        .notNull()
-        .references(() => Users.id, { onDelete: 'cascade' }),
+    creatorMemberId: bigint('creator_member_id', { mode: 'bigint' }),
     owningOrganizationId: bigint('owning_organization_id', { mode: 'bigint' })
         .notNull()
         .references(() => Organizations.id, { onDelete: 'cascade' }),

@@ -28,11 +28,13 @@ import { config } from '../../config';
 import { logger } from '../../config/logger';
 import { ShortCodeResponseDto } from '../../dto/common/ShortCodeResponseDto';
 import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
+import { Token } from 'log4js';
 
 const API_AUTH_BASE = '/api/auth/v0';
 const API_AUTH_USER = API_AUTH_BASE + '/user';
 const API_AUTH_ADMIN = API_AUTH_BASE + '/admin';
 const API_AUTH_PUBLIC = API_AUTH_BASE + '/public';
+const API_AUTH_SYSTEM = API_AUTH_BASE + '/system';
 
 export class AuthServiceClient {
     private static async apiRequest<T>(
@@ -399,6 +401,38 @@ export class AuthServiceClient {
             url: `${API_AUTH_PUBLIC}/users/refresh`,
             headers: {
                 Authorization: refreshToken,
+            },
+        });
+    }
+
+    /**
+     * PUT /api/auth/v0/system/members/${memberId}/urls
+     */
+    static async updateMemberUrlsBySystem(
+        memberId: number,
+        data: UpdateMemberUrlsDto,
+    ): Promise<TokenResponseDto> {
+        return AuthServiceClient.apiRequest<TokenResponseDto>({
+            method: 'put',
+            url: `${API_AUTH_SYSTEM}/members/${memberId}/urls`,
+            headers: {
+                Authorization: `System ${config.app.systemToken}`,
+            },
+            data,
+        });
+    }
+
+    /**
+     * GET /api/auth/v0/system/members/of-user/${userId}
+     */
+    static async getAllMembersOfUserByIdBySystem(
+        memberUserId: number,
+    ): Promise<OrganizationMembersListDto> {
+        return AuthServiceClient.apiRequest<OrganizationMembersListDto>({
+            method: 'get',
+            url: `${API_AUTH_SYSTEM}/members/of-user/${memberUserId}`,
+            headers: {
+                Authorization: `System ${config.app.systemToken}`,
             },
         });
     }

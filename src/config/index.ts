@@ -15,6 +15,7 @@ export const config = {
         logLevel: getEnv('LOG_LEVEL', 'INFO'),
         adminUsername: getEnv('ADMIN_USERNAME'),
         adminPassword: getEnv('ADMIN_PASSWORD'),
+        systemToken: getEnv('SYSTEM_TOKEN'),
     },
     postgres: {
         host: getEnv('DB_HOST'),
@@ -37,5 +38,8 @@ export const config = {
     },
     api: {
         authServiceBaseUrl: getEnv('AUTH_SERVICE_BASE_URL'),
+    },
+    urls: {
+        baseUrl: getEnv('SHORT_URL_BASE'),
     },
 };

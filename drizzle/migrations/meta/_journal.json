@@ -15,6 +15,20 @@
       "when": 1744471579013,
       "tag": "0001_handy_texas_twister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745162367797,
+      "tag": "0002_colorful_living_mummy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1745231712691,
+      "tag": "0003_tired_sage",
+      "breakpoints": true
     }
   ]
 }

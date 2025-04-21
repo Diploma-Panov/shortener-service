@@ -10,7 +10,7 @@ import {
     generateRandomAlphabeticalString,
     generateRandomUrl,
     generateUniqueEmail,
-} from '../../../../../utils/dataUtils';
+} from '../../../../../../utils/dataUtils';
 import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 import { ServiceErrorType } from '../../../../../../exception/errorHandling';

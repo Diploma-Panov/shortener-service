@@ -7,7 +7,7 @@ import {
     generateRandomUrl,
     generateUniqueEmail,
     generateUniqueSlug,
-} from './dataUtils';
+} from '../../utils/dataUtils';
 import { loginViaAuthService, signupNewUser } from '../../components/service/users.service';
 import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
 import { AuthServiceClient } from '../../components/api/AuthServiceClient';
@@ -26,6 +26,7 @@ import {
 } from '../../dto/organizationMembers.views';
 import { MemberRole } from '../../auth/common';
 import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
+import { ensureInfoIsSynchronized } from '../../middleware/dataSynchronization.middleware';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();
@@ -159,6 +160,8 @@ export const inviteMemberInOrganization = async (
     const model: OrganizationMemberDto = members.entries.find(
         (m) => m.email === user.signupData.username,
     )!;
+
+    user.tokens = await AuthServiceClient.refreshToken(user.tokens.refreshToken ?? '');
 
     return {
         member,

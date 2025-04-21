@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticatedUsersRouter } from './users.controller';
-import { dataSynchronizationMiddleware } from '../../../../../components/service/dataSynchronization.service';
+import { dataSynchronizationMiddleware } from '../../../../../middleware/dataSynchronization.middleware';
 import { authenticatedOrganizationsRouter } from './organizations.controller';
 import { authenticatedOrganizationMembersRouter } from './organizationMembers.controller';
 import { authenticatedShortUrlsRouter } from './shortUrls.controller';

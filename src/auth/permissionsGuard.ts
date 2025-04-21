@@ -35,4 +35,5 @@ export const permissionsGuard =
         } catch (e) {
             next(new AuthError(JSON.stringify(e), ServiceErrorType.ACCESS_DENIED));
         }
+        next();
     };

@@ -1,5 +1,6 @@
 import { PagedResponse } from './common/PagedResponse';
 import { ShortUrlState, ShortUrlType } from '../db/model';
+import { IsDefined, IsNotEmpty, IsUrl } from 'class-validator';
 
 export interface ShortUrlsSearchParams {
     p?: number;
@@ -23,4 +24,13 @@ export interface ShortUrlDto {
 
 export interface ShortUrlsListDto extends PagedResponse {
     entries: ShortUrlDto[];
+}
+
+export class CreateShortUrlDto {
+    @IsUrl()
+    @IsNotEmpty()
+    originalUrl: string;
+
+    @IsDefined()
+    tags: string[];
 }

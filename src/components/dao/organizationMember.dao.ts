@@ -1,7 +1,32 @@
 import { OrganizationMember } from '../../db/model';
 import { db } from '../../db/drizzle';
-import { OrganizationMembers } from '../../db/schema';
+import { OrganizationMembers, Organizations } from '../../db/schema';
 import { and, count, eq, notInArray } from 'drizzle-orm';
+import { NotFoundError } from '../../exception/NotFoundError';
+
+export const findMemberByUserIdAndOrganizationSlugThrowable = async (
+    slug: string,
+    userId: bigint,
+): Promise<OrganizationMember> => {
+    const row = (
+        await db
+            .select({ member: OrganizationMembers })
+            .from(OrganizationMembers)
+            .innerJoin(Organizations, eq(Organizations.id, OrganizationMembers.organizationId))
+            .where(and(eq(OrganizationMembers.memberUserId, userId), eq(Organizations.slug, slug)))
+            .limit(1)
+    )[0];
+
+    if (!row) {
+        throw new NotFoundError(
+            'OrganizationMember',
+            'memberUserId,slug',
+            `${userId.toString()},${slug}`,
+        );
+    }
+
+    return row.member;
+};
 
 export const createNewOrganizationMember = async (
     organizationMember: OrganizationMember,

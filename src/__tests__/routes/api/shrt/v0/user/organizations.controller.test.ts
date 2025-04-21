@@ -20,7 +20,7 @@ import {
     generateRandomAlphanumericalString,
     generateRandomUrl,
     generateUniqueSlug,
-} from '../../../../../utils/dataUtils';
+} from '../../../../../../utils/dataUtils';
 import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
 import { ErrorResponseDto } from '../../../../../../dto/common/errors';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';

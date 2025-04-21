@@ -18,7 +18,7 @@ import {
     generateRandomAlphabeticalString,
     generateRandomAlphanumericalString,
     generateUniqueEmail,
-} from '../../../../../utils/dataUtils';
+} from '../../../../../../utils/dataUtils';
 import { MemberRole } from '../../../../../../auth/common';
 import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 import { MessageResponseDto } from '../../../../../../dto/common/MessageResponseDto';
@@ -103,7 +103,7 @@ describe('Authenticated organization members test', () => {
 
         const {
             tokens: { accessToken },
-            organization: { slug },
+            organization: { slug, id: organizationId },
         } = await createOrganizationForUser(oldToken);
 
         const dto: InviteMemberDto = {
@@ -135,6 +135,7 @@ describe('Authenticated organization members test', () => {
             entries: expect.arrayContaining<OrganizationMemberDto>([
                 {
                     id: expect.any(Number),
+                    organizationId,
                     fullName: dto.firstname + ' ' + dto.lastname,
                     email: dto.email,
                     roles: expect.arrayContaining(dto.roles),
@@ -156,7 +157,7 @@ describe('Authenticated organization members test', () => {
 
         const {
             tokens: { accessToken },
-            organization: { slug },
+            organization: { slug, id: organizationId },
         } = await createOrganizationForUser(oldToken);
 
         const {
@@ -186,6 +187,7 @@ describe('Authenticated organization members test', () => {
             entries: expect.arrayContaining<OrganizationMemberDto>([
                 {
                     id,
+                    organizationId,
                     fullName: firstname + ' ' + lastname,
                     email: email,
                     roles: expect.arrayContaining(dto.newRoles),
@@ -207,7 +209,7 @@ describe('Authenticated organization members test', () => {
 
         const {
             tokens: { accessToken },
-            organization: { slug },
+            organization: { slug, id: organizationId },
         } = await createOrganizationForUser(oldToken);
 
         const {
@@ -225,6 +227,7 @@ describe('Authenticated organization members test', () => {
             await AuthServiceClient.getOrganizationMembers(accessToken, slug, {});
         expect(allMembersBefore.entries).toContainEqual<OrganizationMemberDto>({
             id,
+            organizationId,
             fullName,
             email,
             roles,
@@ -249,6 +252,7 @@ describe('Authenticated organization members test', () => {
             await AuthServiceClient.getOrganizationMembers(accessToken, slug, {});
         expect(allMembersAfter.entries).toContainEqual<OrganizationMemberDto>({
             id,
+            organizationId,
             fullName,
             email,
             roles,

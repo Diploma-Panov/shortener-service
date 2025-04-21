@@ -29,6 +29,7 @@ export class InviteMemberDto {
 
 export interface OrganizationMemberDto {
     id: number;
+    organizationId: number;
     fullName: string;
     email: string;
     roles: MemberRole[];

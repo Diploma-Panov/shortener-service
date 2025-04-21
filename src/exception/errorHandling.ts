@@ -1,5 +1,8 @@
 import { AuthServiceApiError } from './AuthServiceApiError';
 import { NextFunction, Request, Response } from 'express';
+import { AuthError } from './AuthError';
+import { ErrorResponseDto } from '../dto/common/errors';
+import { NotFoundError } from './NotFoundError';
 
 export enum ServiceErrorType {
     PLATFORM_ERROR = 'PLATFORM_ERROR',
@@ -58,5 +61,27 @@ export const errorHandlerMiddleware = (
         res.status(
             serviceErrorTypeToResponseStatus(payload.errors[0].errorType as ServiceErrorType),
         ).json(payload);
+    } else if (error instanceof AuthError) {
+        const payload: ErrorResponseDto = {
+            errors: [
+                {
+                    errorType: error.errorType,
+                    errorMessage: error.message,
+                    errorClass: 'AuthError',
+                },
+            ],
+        };
+        res.status(serviceErrorTypeToResponseStatus(error.errorType)).json(payload);
+    } else if (error instanceof NotFoundError) {
+        const payload: ErrorResponseDto = {
+            errors: [
+                {
+                    errorType: ServiceErrorType.ENTITY_NOT_FOUND,
+                    errorMessage: error.message,
+                    errorClass: 'NotFoundError',
+                },
+            ],
+        };
+        res.status(404).json(payload);
     }
 };
