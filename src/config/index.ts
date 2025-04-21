@@ -29,7 +29,7 @@ export const config = {
     },
     dynamodb: {
         region: getEnv('AWS_REGION'),
-        tableName: getEnv('DDB_LINK_RESOLUTIONS_TABLE'),
+        tableName: getEnv('STATS_TABLE_NAME'),
     },
     kafka: {
         bootstrapServer: getEnv('KAFKA_BOOTSTRAP_SERVER'),
