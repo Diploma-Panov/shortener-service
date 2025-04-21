@@ -1,4 +1,5 @@
 import {
+    createShortUrlForOrganization,
     createTestApplication,
     inviteMemberInOrganization,
     signupRandomUser,
@@ -10,6 +11,7 @@ import {
     CreateShortUrlDto,
     ShortUrlDto,
     ShortUrlsListDto,
+    ShortUrlsSearchParams,
 } from '../../../../../../dto/shortUrls.views';
 import { generateRandomUrl } from '../../../../../../utils/dataUtils';
 import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto';
@@ -20,7 +22,90 @@ import { ShortUrl, ShortUrlState, ShortUrlType } from '../../../../../../db/mode
 const app = createTestApplication(apiRouter);
 
 describe('Short URLs controller test', () => {
-    it('should return list of short urls of organization with query params', async () => {});
+    it('should return list of short urls of organization with query params', async () => {
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await signupRandomUser();
+
+        const creationPromises = Array.from({ length: 15 }, (_, i) =>
+            createShortUrlForOrganization(
+                slug,
+                accessToken,
+                i % 2 === 0 ? ['even'] : ['odd']
+            )
+        );
+        const results = await Promise.all(creationPromises);
+        const urlIds: number[] = results.map(({ url: { id } }) => id);
+
+        /**
+         *  Without query params
+         */
+        const res1 = await request(app)
+            .get(`/user/organizations/${slug}/urls`)
+            .set('Authorization', accessToken);
+        expect(res1.status).toEqual(200);
+        expect(res1.body.payload).toEqual<ShortUrlsListDto>({
+            entries: expect.arrayContaining([]),
+            total: 15,
+            hasMore: true,
+            page: 0,
+            perPage: 10,
+        });
+
+        /**
+         * With pagination
+         */
+        const res2 = await request(app)
+            .get(`/user/organizations/${slug}/urls`)
+            .set('Authorization', accessToken)
+            .query({
+                p: 0,
+                q: 14,
+                tags: ['odd', 'test', 'a', 'b'],
+            } as ShortUrlsSearchParams);
+        expect(res2.status).toEqual(200);
+        expect(res2.body.payload).toEqual<ShortUrlsListDto>({
+            entries: expect.arrayContaining([]),
+            total: 7,
+            hasMore: false,
+            page: 0,
+            perPage: 14,
+        });
+        for (const urlId of res2.body.payload.entries.map((e: ShortUrlDto) => e.id)) {
+            expect(urlIds).toContainEqual(urlId);
+        }
+
+        /**
+         * By urls manager
+         */
+        const {
+            user: {
+                tokens: { accessToken: memberToken },
+            },
+        } = await inviteMemberInOrganization(slug, accessToken, {
+            allowedUrls: [urlIds[0], urlIds[10]],
+            allowedAllUrls: false,
+        });
+        const res3 = await request(app)
+            .get(`/user/organizations/${slug}/urls`)
+            .set('Authorization', memberToken);
+        expect(res3.status).toEqual(200);
+        expect(res3.body.payload).toEqual<ShortUrlsListDto>({
+            entries: expect.arrayContaining([
+                expect.objectContaining({
+                    id: urlIds[0],
+                }),
+                expect.objectContaining({
+                    id: urlIds[10],
+                }),
+            ]),
+            total: 2,
+            hasMore: false,
+            page: 0,
+            perPage: 10,
+        });
+    });
 
     it('should create short url', async () => {
         const {

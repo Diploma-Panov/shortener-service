@@ -15,6 +15,7 @@ import { MemberPermission, OrganizationAccessEntry } from '../../../../../auth/c
 import { logger } from '../../../../../config/logger';
 import { TokenResponseDto } from '../../../../../dto/common/TokenResponseDto';
 import { validationMiddleware } from '../../../../../middleware/validation.middleware';
+import { isUndefined } from 'node:util';
 
 const authenticatedShortUrlsRouter = Router({ mergeParams: true });
 
@@ -33,7 +34,14 @@ authenticatedShortUrlsRouter.get(
     ) => {
         try {
             const { slug } = req.params;
+
             const query: ShortUrlsSearchParams = req.query;
+            const rawTags = (query as any).tags;
+            query.tags =
+                typeof rawTags === 'string' ? [rawTags] : Array.isArray(rawTags) ? rawTags : [];
+            query.p = query.p ? Number(query.p) : undefined;
+            query.q = query.q ? Number(query.q) : undefined;
+
             const { userId, organizations } = parseJwtToken(req.headers.authorization ?? '');
             const { allowedAllUrls, allowedUrls } = organizations.find((o) => o.slug === slug)!;
             logger.info(
@@ -76,15 +84,10 @@ authenticatedShortUrlsRouter.post(
                     dto,
                 )}`,
             );
-            const payload: TokenResponseDto = await createNewShortUrlForOrganization(
-                slug,
-                userId,
-                dto,
-                {
-                    allowedUrls: orgAccess.allowedUrls,
-                    allowedAllUrls: orgAccess.allowedAllUrls,
-                },
-            );
+            const { tokens: payload } = await createNewShortUrlForOrganization(slug, userId, dto, {
+                allowedUrls: orgAccess.allowedUrls,
+                allowedAllUrls: orgAccess.allowedAllUrls,
+            });
             res.json({
                 payloadType: 'TokenResponseDto',
                 payload,

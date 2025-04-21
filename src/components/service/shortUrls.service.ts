@@ -7,7 +7,7 @@ import {
     ShortUrlsSearchParams,
 } from '../../dto/shortUrls.views';
 import { ShortUrls, Users, OrganizationMembers, Organizations } from '../../db/schema';
-import { OrganizationMember, ShortUrlState, ShortUrlType } from '../../db/model';
+import { OrganizationMember, ShortUrl, ShortUrlState, ShortUrlType } from '../../db/model';
 import { findMemberByUserIdAndOrganizationSlugThrowable } from '../dao/organizationMember.dao';
 import { config } from '../../config';
 import { generateRandomAlphabeticalString } from '../../utils/dataUtils';
@@ -115,7 +115,7 @@ export const createNewShortUrlForOrganization = async (
     userId: number,
     dto: CreateShortUrlDto,
     currentMemberUrls: { allowedAllUrls: boolean; allowedUrls: number[] },
-): Promise<TokenResponseDto> => {
+): Promise<{ tokens: TokenResponseDto; url: ShortUrl }> => {
     const member: OrganizationMember = await findMemberByUserIdAndOrganizationSlugThrowable(
         slug,
         BigInt(userId),
@@ -129,7 +129,7 @@ export const createNewShortUrlForOrganization = async (
         shortUrlType: ShortUrlType.REGULAR,
     };
 
-    const [inserted] = await db.insert(ShortUrls).values(newUrl).returning({ id: ShortUrls.id });
+    const [inserted] = await db.insert(ShortUrls).values(newUrl).returning();
 
     let updatePermissionsDto: UpdateMemberUrlsDto;
     if (currentMemberUrls.allowedAllUrls) {
@@ -143,5 +143,8 @@ export const createNewShortUrlForOrganization = async (
             allowedAllUrls: false,
         };
     }
-    return await AuthServiceClient.updateMemberUrlsBySystem(member.id, updatePermissionsDto);
+    return {
+        tokens: await AuthServiceClient.updateMemberUrlsBySystem(member.id, updatePermissionsDto),
+        url: inserted,
+    };
 };

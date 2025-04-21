@@ -24,9 +24,13 @@ import {
     OrganizationMemberDto,
     OrganizationMembersListDto,
 } from '../../dto/organizationMembers.views';
-import { MemberRole } from '../../auth/common';
+import { MemberRole, OrganizationAccessEntry } from '../../auth/common';
 import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
 import { ensureInfoIsSynchronized } from '../../middleware/dataSynchronization.middleware';
+import { ShortUrl } from '../../db/model';
+import { createNewShortUrlForOrganization } from '../../components/service/shortUrls.service';
+import { CreateShortUrlDto } from '../../dto/shortUrls.views';
+import { findUrlByIdThrowable } from '../../components/dao/shortUrls.dao';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();
@@ -168,4 +172,21 @@ export const inviteMemberInOrganization = async (
         user,
         model,
     };
+};
+
+export const createShortUrlForOrganization = async (
+    slug: string,
+    accessToken: string,
+    tags?: string[],
+): Promise<{ url: ShortUrl; tokens: TokenResponseDto }> => {
+    const { userId, organizations } = parseJwtToken(accessToken);
+    const o: OrganizationAccessEntry = organizations.find((o) => o.slug === slug)!;
+    const dto: CreateShortUrlDto = {
+        originalUrl: generateRandomUrl(),
+        tags: tags ? tags : ['test'],
+    };
+    return await createNewShortUrlForOrganization(slug, userId, dto, {
+        allowedUrls: o.allowedUrls,
+        allowedAllUrls: o.allowedAllUrls,
+    });
 };
