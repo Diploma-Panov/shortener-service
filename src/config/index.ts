@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
+import dotenvExpand from 'dotenv-expand';
 import { Dialect } from 'drizzle-orm';
 
-dotenv.config();
+const rawEnv = dotenv.config();
+dotenvExpand.expand(rawEnv);
 
 const getEnv = (key: string, fallback?: string): string => {
     const value = process.env[key] || fallback;

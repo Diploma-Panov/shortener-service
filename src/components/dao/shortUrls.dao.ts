@@ -3,11 +3,21 @@ import { db } from '../../db/drizzle';
 import { ShortUrls } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { NotFoundError } from '../../exception/NotFoundError';
+import { config } from '../../config';
 
 export const findUrlByIdThrowable = async (id: number): Promise<ShortUrl> => {
     const [found] = await db.select().from(ShortUrls).where(eq(ShortUrls.id, id));
     if (!found) {
         throw new NotFoundError('ShortUrl', 'id', id);
+    }
+    return found;
+};
+
+export const findUrlByShortCodeThrowable = async (code: string): Promise<ShortUrl> => {
+    const fullShortUrl = `${config.urls.baseUrl}/${code}`;
+    const [found] = await db.select().from(ShortUrls).where(eq(ShortUrls.shortUrl, fullShortUrl));
+    if (!found) {
+        throw new NotFoundError('ShortUrl', 'shortUrl', fullShortUrl);
     }
     return found;
 };
