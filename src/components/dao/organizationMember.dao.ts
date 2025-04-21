@@ -4,6 +4,18 @@ import { OrganizationMembers, Organizations } from '../../db/schema';
 import { and, count, eq, notInArray } from 'drizzle-orm';
 import { NotFoundError } from '../../exception/NotFoundError';
 
+export const findMemberByIdThrowable = async (memberId: number): Promise<OrganizationMember> => {
+    const row = (
+        await db.select().from(OrganizationMembers).where(eq(OrganizationMembers.id, memberId))
+    )[0];
+
+    if (!row) {
+        throw new NotFoundError('OrganizationMember', 'id', memberId);
+    }
+
+    return row;
+};
+
 export const findMemberByUserIdAndOrganizationSlugThrowable = async (
     slug: string,
     userId: bigint,

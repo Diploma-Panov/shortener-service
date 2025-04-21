@@ -18,6 +18,10 @@ import { TokenResponseDto } from '../../../../../../dto/common/TokenResponseDto'
 import { findUrlByIdThrowable } from '../../../../../../components/dao/shortUrls.dao';
 import { parseJwtToken } from '../../../../../../auth/jwt';
 import { ShortUrl, ShortUrlState, ShortUrlType } from '../../../../../../db/model';
+import { ErrorResponseDto } from '../../../../../../dto/common/errors';
+import { ServiceErrorType } from '../../../../../../exception/errorHandling';
+import { UpdateMemberUrlsDto } from '../../../../../../dto/organizationMembers.views';
+import { AuthServiceClient } from '../../../../../../components/api/AuthServiceClient';
 
 const app = createTestApplication(apiRouter);
 
@@ -29,11 +33,7 @@ describe('Short URLs controller test', () => {
         } = await signupRandomUser();
 
         const creationPromises = Array.from({ length: 15 }, (_, i) =>
-            createShortUrlForOrganization(
-                slug,
-                accessToken,
-                i % 2 === 0 ? ['even'] : ['odd']
-            )
+            createShortUrlForOrganization(slug, accessToken, i % 2 === 0 ? ['even'] : ['odd']),
         );
         const results = await Promise.all(creationPromises);
         const urlIds: number[] = results.map(({ url: { id } }) => id);
@@ -104,6 +104,88 @@ describe('Short URLs controller test', () => {
             hasMore: false,
             page: 0,
             perPage: 10,
+        });
+    });
+
+    it('should get short url by id', async () => {
+        const {
+            tokens: { accessToken },
+            organization: { slug },
+        } = await signupRandomUser();
+
+        const { url } = await createShortUrlForOrganization(slug, accessToken);
+
+        const res = await request(app)
+            .get(`/user/organizations/${slug}/urls/${url.id}`)
+            .set('Authorization', accessToken);
+        expect(res.status).toEqual(200);
+        expect(res.body.payload).toEqual<ShortUrlDto>({
+            id: url.id,
+            creatorName: expect.any(String),
+            originalUrl: url.originalUrl,
+            shortUrl: url.shortUrl,
+            state: url.shortUrlState as ShortUrlState,
+            type: url.shortUrlType as ShortUrlType,
+            tags: url.tags,
+        });
+
+        /**
+         *
+         * Try to fetch urls by invited member
+         *
+         */
+        const {
+            user: {
+                tokens: { accessToken: memberAccessToken, refreshToken: memberRefreshToken },
+                userId,
+            },
+            model: { id: memberId },
+        } = await inviteMemberInOrganization(slug, accessToken, {
+            allowedAllUrls: false,
+            allowedUrls: [],
+            roles: [MemberRole.ORGANIZATION_MEMBER, MemberRole.ORGANIZATION_URLS_MANAGER],
+        });
+
+        const fetchWithoutAccess = await request(app)
+            .get(`/user/organizations/${slug}/urls/${url.id}`)
+            .set('Authorization', memberAccessToken);
+        expect(fetchWithoutAccess.status).toEqual(403);
+        expect(fetchWithoutAccess.body).toEqual<ErrorResponseDto>({
+            errors: [
+                {
+                    errorMessage: `User ${userId} does not have access to url ${url.id} in organization ${slug}`,
+                    errorType: ServiceErrorType.ACCESS_DENIED,
+                    errorClass: 'AuthError',
+                },
+            ],
+        });
+
+        const dto: UpdateMemberUrlsDto = {
+            allowedAllUrls: false,
+            newUrlsIds: [url.id],
+        };
+        const updateUrlsRes = await request(app)
+            .put(`/user/organizations/${slug}/members/${memberId}/urls`)
+            .set('Authorization', accessToken)
+            .send(dto);
+        expect(updateUrlsRes.status).toEqual(200);
+
+        const { accessToken: newMemberToken } = await AuthServiceClient.refreshToken(
+            memberRefreshToken!,
+        );
+
+        const fetchWithAccess = await request(app)
+            .get(`/user/organizations/${slug}/urls/${url.id}`)
+            .set('Authorization', newMemberToken);
+        expect(fetchWithAccess.status).toEqual(200);
+        expect(fetchWithAccess.body.payload).toEqual<ShortUrlDto>({
+            id: url.id,
+            creatorName: expect.any(String),
+            originalUrl: url.originalUrl,
+            shortUrl: url.shortUrl,
+            state: url.shortUrlState as ShortUrlState,
+            type: url.shortUrlType as ShortUrlType,
+            tags: url.tags,
         });
     });
 
