@@ -1,7 +1,7 @@
 import { ddb } from '../../dynamo/client';
 import { config } from '../../config';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { GlobalStatisticsDto } from '../../dto/statistics.views';
+import { GlobalStatisticsDto, PeriodCountsDto } from '../../dto/statistics.views';
 
 export const aggregateGlobalStatsForShortUrlCode = async (
     code: string,
@@ -41,4 +41,50 @@ export const aggregateGlobalStatsForShortUrlCode = async (
     }
 
     return { countryCounts, cityCounts };
+};
+
+export const aggregatePeriodStatsByCode = async (p: {
+    code: string;
+    startKey: string;
+    endKey: string;
+    prefix: string;
+    startDate: Date;
+    endDate: Date;
+    periodSec: number;
+    sliceLen: number;
+}): Promise<PeriodCountsDto> => {
+    const { Items } = await ddb.send(
+        new QueryCommand({
+            TableName: config.dynamodb.tableName,
+            KeyConditionExpression: 'urlCode = :code AND #bkt BETWEEN :start AND :end',
+            ExpressionAttributeNames: {
+                '#bkt': 'bucket',
+                '#cnt': 'count',
+            },
+            ExpressionAttributeValues: {
+                ':code': p.code,
+                ':start': p.startKey,
+                ':end': p.endKey,
+            },
+            ProjectionExpression: '#bkt, #cnt',
+            ScanIndexForward: true,
+        }),
+    );
+
+    const raw: Record<string, number> = {};
+    for (const item of Items ?? []) {
+        const b = (item.bucket as string).slice(p.prefix.length);
+        raw[b] = (raw[b] || 0) + Number(item.count);
+    }
+
+    const points: PeriodCountsDto = { counts: [] };
+    for (let ts = p.startDate.getTime(); ts <= p.endDate.getTime(); ts += p.periodSec * 1000) {
+        const iso = new Date(ts).toISOString().slice(0, p.sliceLen);
+        points.counts.push({
+            timestamp: iso,
+            count: raw[iso] || 0,
+        });
+    }
+
+    return points;
 };

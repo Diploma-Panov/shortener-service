@@ -7,5 +7,6 @@ module.exports = {
     "/build/",
     "/src/__tests__/utils/",
     "/src/__tests__/e2e/",
-  ]
+  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js']
 };

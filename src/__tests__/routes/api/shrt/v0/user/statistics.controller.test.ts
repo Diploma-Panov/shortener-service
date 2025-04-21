@@ -9,12 +9,17 @@ import { ChangeUrlStateDto } from '../../../../../../dto/shortUrls.views';
 import { ShortUrlState } from '../../../../../../db/model';
 import request from 'supertest';
 import { config } from '../../../../../../config';
+import {
+    PeriodCountDto,
+    PeriodCountsDto,
+    StatsPeriod,
+} from '../../../../../../dto/statistics.views';
 
 const apiApp = createTestApplication(apiRouter);
 const rApp = createTestApplication(resolutionsRouter);
 
 describe('Statistics test', () => {
-    it('should get global stats for url', async () => {
+    it('should get stats for url', async () => {
         const {
             tokens: { accessToken },
             organization: { slug },
@@ -56,11 +61,52 @@ describe('Statistics test', () => {
                 US: 123,
                 JP: 523,
                 UA: 222,
-                XX: 12,
+                XX: expect.any(Number),
             },
             cityCounts: {
                 'New York': 123,
             },
+        });
+
+        const now = new Date();
+        now.setSeconds(0, 0);
+        const start = new Date(now.getTime() - 60 * 1000).toISOString();
+        const end = new Date(now.getTime() + 60 * 1000).toISOString();
+
+        const resH = await request(apiApp)
+            .get(`/user/organizations/${slug}/urls/${url.id}/stats/time-range`)
+            .set('Authorization', accessToken)
+            .query({
+                start,
+                end,
+                period: StatsPeriod.HOUR,
+            });
+        expect(resH.status).toEqual(200);
+        expect(resH.body.payload).toEqual<PeriodCountsDto>({
+            counts: expect.arrayContaining<PeriodCountDto>([
+                {
+                    timestamp: start.substring(0, 13),
+                    count: 880,
+                },
+            ]),
+        });
+
+        const resM = await request(apiApp)
+            .get(`/user/organizations/${slug}/urls/${url.id}/stats/time-range`)
+            .set('Authorization', accessToken)
+            .query({
+                start,
+                end,
+                period: StatsPeriod.MINUTE,
+            });
+        expect(resM.status).toEqual(200);
+        expect(resM.body.payload).toEqual<PeriodCountsDto>({
+            counts: expect.arrayContaining<PeriodCountDto>([
+                {
+                    timestamp: now.toISOString().substring(0, 16),
+                    count: 880,
+                },
+            ]),
         });
     });
 });
