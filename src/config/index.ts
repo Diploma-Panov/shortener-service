@@ -44,4 +44,7 @@ export const config = {
     urls: {
         baseUrl: getEnv('SHORT_URL_BASE'),
     },
+    redis: {
+        url: getEnv('REDIS_URL'),
+    },
 };
