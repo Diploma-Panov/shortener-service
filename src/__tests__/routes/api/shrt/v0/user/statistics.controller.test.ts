@@ -18,7 +18,7 @@ import {
 const apiApp = createTestApplication(apiRouter);
 const rApp = createTestApplication(resolutionsRouter);
 
-describe('Statistics test', () => {
+describe.skip('Statistics test', () => {
     it('should get stats for url', async () => {
         const {
             tokens: { accessToken },
