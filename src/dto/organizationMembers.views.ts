@@ -35,6 +35,7 @@ export interface OrganizationMemberDto {
     roles: MemberRole[];
     allowedUrls: number[];
     allowedAllUrls: boolean;
+    pictureUrl?: string | null;
 }
 
 export interface OrganizationMembersListDto extends PagedResponse {

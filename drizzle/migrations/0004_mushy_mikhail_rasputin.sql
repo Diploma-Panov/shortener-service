@@ -1,0 +1,1 @@
+ALTER TABLE "short_urls" ALTER COLUMN "owning_organization_id" DROP NOT NULL;

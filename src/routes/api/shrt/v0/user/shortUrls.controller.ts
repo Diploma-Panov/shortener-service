@@ -8,6 +8,7 @@ import {
 } from '../../../../../dto/shortUrls.views';
 import {
     createNewShortUrlForOrganization,
+    getAllExistingTagsBySlug,
     getShortUrlsListBySlug,
 } from '../../../../../components/service/shortUrls.service';
 import { AbstractResponseDto } from '../../../../../dto/common/AbstractResponseDto';
@@ -35,6 +36,23 @@ import { urlAccessGuard } from '../../../../../auth/urlAccessGuard';
 const authenticatedShortUrlsRouter = Router({ mergeParams: true });
 
 authenticatedShortUrlsRouter.get(
+    '/tags',
+    permissionsGuard(MemberPermission.BASIC_VIEW),
+    async (req: Request<{ slug: string }>, res, next) => {
+        try {
+            const { slug } = req.params;
+            const payload = await getAllExistingTagsBySlug(slug);
+            res.json({
+                payloadType: 'string[]',
+                payload,
+            });
+        } catch (e) {
+            next(e);
+        }
+    },
+);
+
+authenticatedShortUrlsRouter.get(
     '/',
     permissionsGuard(MemberPermission.BASIC_VIEW),
     async (
@@ -51,9 +69,18 @@ authenticatedShortUrlsRouter.get(
             const { slug } = req.params;
 
             const query: ShortUrlsSearchParams = req.query;
-            const rawTags = (query as any).tags;
-            query.tags =
-                typeof rawTags === 'string' ? [rawTags] : Array.isArray(rawTags) ? rawTags : [];
+            if (query.s) {
+                query.s = (query.s as unknown as string).split(',') as ShortUrlState[];
+            } else {
+                query.s = [];
+            }
+
+            if (query.tags) {
+                query.tags = (query.tags as unknown as string).split(',');
+            } else {
+                query.tags = [];
+            }
+
             query.p = query.p ? Number(query.p) : undefined;
             query.q = query.q ? Number(query.q) : undefined;
 

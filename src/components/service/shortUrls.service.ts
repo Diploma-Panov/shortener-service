@@ -14,6 +14,21 @@ import { generateRandomAlphabeticalString } from '../../utils/dataUtils';
 import { AuthServiceClient } from '../api/AuthServiceClient';
 import { UpdateMemberUrlsDto } from '../../dto/organizationMembers.views';
 import { TokenResponseDto } from '../../dto/common/TokenResponseDto';
+import { isEmail } from 'class-validator';
+
+export async function getAllExistingTagsBySlug(slug: string): Promise<string[]> {
+    const query = sql<{ tag: string }>`
+        SELECT DISTINCT UNNEST(${ShortUrls.tags}) AS tag
+        FROM ${ShortUrls}
+                 INNER JOIN ${Organizations}
+                            ON ${ShortUrls.owningOrganizationId} = ${Organizations.id}
+        WHERE ${Organizations.slug} = ${slug}
+        ORDER BY tag
+    `;
+
+    const result = (await db.execute(query)) as Array<{ tag: string }>;
+    return result.map((row) => row.tag);
+}
 
 export async function getShortUrlsListBySlug(
     slug: string,
@@ -70,13 +85,7 @@ export async function getShortUrlsListBySlug(
         })
         .from(ShortUrls)
         .innerJoin(Organizations, eq(Organizations.id, ShortUrls.owningOrganizationId))
-        .leftJoin(
-            OrganizationMembers,
-            and(
-                eq(OrganizationMembers.id, ShortUrls.creatorMemberId),
-                eq(OrganizationMembers.organizationId, Organizations.id),
-            ),
-        )
+        .leftJoin(OrganizationMembers, eq(OrganizationMembers.id, ShortUrls.creatorMemberId))
         .leftJoin(Users, eq(Users.id, OrganizationMembers.memberUserId))
         .where(and(...whereClauses))
         .orderBy(orderDirection === 'ASC' ? asc(orderByField) : desc(orderByField))
@@ -149,5 +158,32 @@ export const createNewShortUrlForOrganization = async (
     return {
         tokens: await AuthServiceClient.updateMemberUrlsBySystem(member.id, updatePermissionsDto),
         url: inserted,
+    };
+};
+
+export const createTrialShortUrl = async (originalUrl: string): Promise<ShortUrlDto> => {
+    const newUrl = {
+        creatorMemberId: null,
+        owningOrganizationId: null,
+        originalUrl,
+        shortUrl: config.urls.baseUrl + `/${generateRandomAlphabeticalString(6)}`,
+        shortUrlState: ShortUrlState.ACTIVE,
+        shortUrlType: ShortUrlType.TRIAL,
+        tags: [],
+    };
+
+    const inserted: ShortUrl = await db.transaction(async (tx) => {
+        const [row] = await tx.insert(ShortUrls).values(newUrl).returning();
+        return row;
+    });
+
+    return {
+        creatorName: '',
+        id: inserted.id,
+        originalUrl: inserted.originalUrl,
+        shortUrl: inserted.shortUrl,
+        state: inserted.shortUrlState as ShortUrlState,
+        tags: [],
+        type: inserted.shortUrlType as ShortUrlType,
     };
 };

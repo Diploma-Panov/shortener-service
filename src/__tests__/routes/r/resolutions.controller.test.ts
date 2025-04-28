@@ -10,6 +10,7 @@ import { config } from '../../../config';
 import { apiRouter } from '../../../routes/api/shrt/v0';
 import { ChangeUrlStateDto } from '../../../dto/shortUrls.views';
 import { ShortUrlState } from '../../../db/model';
+import { ServiceErrorType } from '../../../exception/errorHandling';
 
 const app = createTestApplication(resolutionsRouter);
 
@@ -21,7 +22,7 @@ describe('Resolutions test', () => {
             errors: [
                 {
                     errorClass: 'NotFoundError',
-                    errorType: 'ENTITY_NOT_FOUND',
+                    errorType: ServiceErrorType.ENTITY_NOT_FOUND,
                     errorMessage: `Could not find ShortUrl with shortUrl=${config.urls.baseUrl}/ajsdfj`,
                 },
             ],

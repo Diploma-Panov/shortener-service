@@ -26,11 +26,9 @@ import {
 } from '../../dto/organizationMembers.views';
 import { MemberRole, OrganizationAccessEntry } from '../../auth/common';
 import { OrganizationScope } from '../../kafka/dto/userUpdates.views';
-import { ensureInfoIsSynchronized } from '../../middleware/dataSynchronization.middleware';
 import { ShortUrl } from '../../db/model';
 import { createNewShortUrlForOrganization } from '../../components/service/shortUrls.service';
 import { CreateShortUrlDto } from '../../dto/shortUrls.views';
-import { findUrlByIdThrowable } from '../../components/dao/shortUrls.dao';
 
 export const createTestApplication = (baseRouter: Router) => {
     const app = express();

@@ -33,6 +33,10 @@ export const permissionsGuard =
                 );
             }
         } catch (e) {
+            if ((e as { message: string }).message === 'Invalid JWT token') {
+                next(new AuthError(JSON.stringify(e), ServiceErrorType.INVALID_ACCESS_TOKEN));
+                return;
+            }
             next(new AuthError(JSON.stringify(e), ServiceErrorType.ACCESS_DENIED));
         }
         next();

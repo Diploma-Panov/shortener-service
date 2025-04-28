@@ -87,12 +87,15 @@ export const errorHandlerMiddleware = (
         const payload: ErrorResponseDto = {
             errors: [
                 {
-                    errorType: ServiceErrorType.INTERNAL_ERROR,
+                    errorType:
+                        error.message === 'Invalid JWT token'
+                            ? ServiceErrorType.INVALID_ACCESS_TOKEN
+                            : ServiceErrorType.INTERNAL_ERROR,
                     errorMessage: error.message,
                     errorClass: 'Error',
                 },
             ],
         };
-        res.status(500).json(payload);
+        res.status(serviceErrorTypeToResponseStatus(payload.errors[0].errorType)).json(payload);
     }
 };

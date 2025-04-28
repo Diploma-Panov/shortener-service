@@ -1,6 +1,8 @@
+import { ServiceErrorType } from '../../exception/errorHandling';
+
 export interface ErrorResponseElement {
     errorMessage: string;
-    errorType: string;
+    errorType: ServiceErrorType;
     errorClass: string;
 }
 

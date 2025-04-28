@@ -66,9 +66,10 @@ const textArray = customType<{
 export const ShortUrls = pgTable('short_urls', {
     id: serial('id').primaryKey(),
     creatorMemberId: bigint('creator_member_id', { mode: 'bigint' }),
-    owningOrganizationId: bigint('owning_organization_id', { mode: 'bigint' })
-        .notNull()
-        .references(() => Organizations.id, { onDelete: 'cascade' }),
+    owningOrganizationId: bigint('owning_organization_id', { mode: 'bigint' }).references(
+        () => Organizations.id,
+        { onDelete: 'cascade' },
+    ),
     originalUrl: varchar('original_url', { length: 1024 }).notNull(),
     shortUrl: varchar('short_url', { length: 63 }).notNull(),
     shortUrlState: ShortUrlStatePgEnum('short_url_state').notNull(),
