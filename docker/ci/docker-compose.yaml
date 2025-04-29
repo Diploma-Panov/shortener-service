@@ -10,7 +10,7 @@ services:
       - spring.data.redis.host=ci-redis
       - spring.kafka.bootstrap-servers=ci-kafka:9092
     volumes:
-      - ../ecs/.aws:/root/.aws
+      - ../eks/.aws:/root/.aws
     depends_on:
       - ci-postgres
       - ci-redis
@@ -25,7 +25,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - ../ecs/init:/docker-entrypoint-initdb.d
+      - ../eks/init:/docker-entrypoint-initdb.d
 
   ci-redis:
     container_name: ci-redis

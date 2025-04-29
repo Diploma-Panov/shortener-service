@@ -11,7 +11,7 @@ services:
       - spring.kafka.bootstrap-servers=shortener-kafka:9092
       - platform.is-test=false
     volumes:
-      - ../ecs/.aws:/root/.aws
+      - ../eks/.aws:/root/.aws
     depends_on:
       - shortener-postgres
       - shortener-redis
@@ -24,7 +24,7 @@ services:
       POSTGRES_USER: 'local-user'
       POSTGRES_PASSWORD: 'qwerty'
     volumes:
-      - ../ecs/init:/docker-entrypoint-initdb.d
+      - ../eks/init:/docker-entrypoint-initdb.d
       - shortener_postgres_data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
