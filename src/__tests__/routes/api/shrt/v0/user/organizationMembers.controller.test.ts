@@ -141,7 +141,7 @@ describe('Authenticated organization members test', () => {
                     roles: expect.arrayContaining(dto.roles),
                     allowedUrls: expect.arrayContaining(dto.allowedUrls),
                     allowedAllUrls: dto.allowedAllUrls,
-                    pictureUrl: null
+                    pictureUrl: null,
                 },
             ]),
             total: 2,
@@ -194,7 +194,7 @@ describe('Authenticated organization members test', () => {
                     roles: expect.arrayContaining(dto.newRoles),
                     allowedUrls: expect.arrayContaining(allowedUrls),
                     allowedAllUrls: allowedAllUrls,
-                    pictureUrl: null
+                    pictureUrl: null,
                 },
             ]),
             total: 2,
@@ -235,7 +235,7 @@ describe('Authenticated organization members test', () => {
             roles,
             allowedUrls: allowedUrlsBefore,
             allowedAllUrls: allowedAllUrlsBefore,
-            pictureUrl: null
+            pictureUrl: null,
         });
 
         const dto: UpdateMemberUrlsDto = {
@@ -261,7 +261,7 @@ describe('Authenticated organization members test', () => {
             roles,
             allowedUrls: dto.newUrlsIds,
             allowedAllUrls: dto.allowedAllUrls,
-            pictureUrl: null
+            pictureUrl: null,
         });
     });
 

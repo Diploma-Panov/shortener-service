@@ -83,7 +83,7 @@ jobs:
         run: |
           docker build -t diploma-shortener-service \
             --build-arg ENVIRONMENT_NAME=prod \
-            -f ./docker/ecs/Dockerfile .
+            -f ./docker/eks/Dockerfile .
 
       - name: Tag image
         run: docker tag diploma-shortener-service:latest 533267200006.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/diploma-shortener-service:prod.latest
