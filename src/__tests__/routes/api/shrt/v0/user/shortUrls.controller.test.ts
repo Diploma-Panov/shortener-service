@@ -63,8 +63,8 @@ describe('Short URLs controller test', () => {
             .query({
                 p: 0,
                 q: 14,
-                tags: ['odd', 'test', 'a', 'b'],
-            } as ShortUrlsSearchParams);
+                tags: 'odd,test,a,b',
+            });
         expect(res2.status).toEqual(200);
         expect(res2.body.payload).toEqual<ShortUrlsListDto>({
             entries: expect.arrayContaining([]),
