@@ -32,8 +32,11 @@ export const config = {
         tableName: getEnv('STATS_TABLE_NAME'),
     },
     kafka: {
-        bootstrapServer: getEnv('KAFKA_BOOTSTRAP_SERVER'),
-        userUpdatesTopicName: getEnv('KAFKA_USER_UPDATES_TOPIC_NAME'),
+        bootstrapServers: (process.env.KAFKA_BOOTSTRAP_SERVER || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
+        userUpdatesTopicName: process.env.KAFKA_USER_UPDATES_TOPIC_NAME!,
     },
     jwt: {
         publicKey: getEnv('JWT_PUBLIC_KEY').replace(/\\n/g, '\n'),

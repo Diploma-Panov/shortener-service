@@ -19,7 +19,7 @@ import {
 
 const kafka = new Kafka({
     clientId: 'user-updates-consumer',
-    brokers: [config.kafka.bootstrapServer],
+    brokers: config.kafka.bootstrapServers,
 });
 
 const consumer = kafka.consumer({ groupId: 'user-updates-group' });
