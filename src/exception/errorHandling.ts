@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthError } from './AuthError';
 import { ErrorResponseDto } from '../dto/common/errors';
 import { NotFoundError } from './NotFoundError';
+import { logger } from '../config/logger';
 
 export enum ServiceErrorType {
     PLATFORM_ERROR = 'PLATFORM_ERROR',
@@ -56,6 +57,7 @@ export const errorHandlerMiddleware = (
     res: Response,
     _next: NextFunction,
 ) => {
+    logger.error(JSON.stringify(error));
     if (error instanceof AuthServiceApiError) {
         const payload = error.errorResponse;
         res.status(
