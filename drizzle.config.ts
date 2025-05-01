@@ -15,5 +15,6 @@ export default {
         password: process.env.DB_PASSWORD!,
         database: process.env.DB_PRIMARY_DATABASE!,
         ssl: process.env.DRIZZLE_SSL === 'true'
-    },
+            ? { rejectUnauthorized: false }
+            : false    },
 } satisfies Config;
