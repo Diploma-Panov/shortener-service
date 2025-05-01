@@ -26,6 +26,7 @@ export const config = {
         username: getEnv('DB_USERNAME'),
         password: getEnv('DB_PASSWORD'),
         dialect: getEnv('DB_DIALECT') as Dialect,
+        drizzleSsl: getEnv('DRIZZLE_SSL', 'false') === 'true',
     },
     dynamodb: {
         region: getEnv('AWS_REGION'),
