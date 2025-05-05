@@ -38,7 +38,6 @@ export function isPrivateIp(ip: string): boolean {
     return false;
 }
 
-
 const resolutionsRouter = Router();
 
 resolutionsRouter.get(
@@ -46,9 +45,7 @@ resolutionsRouter.get(
     async (req: Request<{ code: string }>, res: Response, next: NextFunction) => {
         const { code } = req.params;
         const ip =
-            req.ip && isPrivateIp(req.ip)
-                ? (req.headers['x-forwarded-for'] as string)
-                : req.ip;
+            req.ip && isPrivateIp(req.ip) ? (req.headers['x-forwarded-for'] as string) : req.ip;
         logger.info(`Received GET /r/${code} from ip=${ip}`);
 
         try {
