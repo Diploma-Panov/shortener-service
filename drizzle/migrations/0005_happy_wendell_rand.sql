@@ -1,0 +1,1 @@
+ALTER TABLE "short_urls" ALTER COLUMN "original_url" SET DATA TYPE varchar;

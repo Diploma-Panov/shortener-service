@@ -7,6 +7,38 @@ import { NotFoundError } from '../../../../../exception/NotFoundError';
 import { redisClient } from '../../../../../config/redis';
 import { recordResolution } from '../../../../../components/service/resolutions.service';
 
+export function isPrivateIp(ip: string): boolean {
+    if (ip.startsWith('::ffff:')) {
+        ip = ip.substring(7);
+    }
+    if (ip === '::1') {
+        ip = '127.0.0.1';
+    }
+
+    const parts = ip.split('.').map(Number);
+    if (parts.length !== 4 || parts.some(isNaN)) {
+        return false;
+    }
+
+    const [a, b] = parts;
+
+    if (a === 10) {
+        return true;
+    }
+    if (a === 172 && b >= 16 && b <= 31) {
+        return true;
+    }
+    if (a === 192 && b === 168) {
+        return true;
+    }
+    if (a === 127) {
+        return true;
+    }
+
+    return false;
+}
+
+
 const resolutionsRouter = Router();
 
 resolutionsRouter.get(
@@ -14,7 +46,7 @@ resolutionsRouter.get(
     async (req: Request<{ code: string }>, res: Response, next: NextFunction) => {
         const { code } = req.params;
         const ip =
-            req.ip === '::ffff:127.0.0.1' || req.ip === '::1'
+            req.ip && isPrivateIp(req.ip)
                 ? (req.headers['x-forwarded-for'] as string)
                 : req.ip;
         logger.info(`Received GET /r/${code} from ip=${ip}`);

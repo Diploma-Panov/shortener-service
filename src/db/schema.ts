@@ -70,7 +70,7 @@ export const ShortUrls = pgTable('short_urls', {
         () => Organizations.id,
         { onDelete: 'cascade' },
     ),
-    originalUrl: varchar('original_url', { length: 1024 }).notNull(),
+    originalUrl: varchar('original_url').notNull(),
     shortUrl: varchar('short_url', { length: 63 }).notNull(),
     shortUrlState: ShortUrlStatePgEnum('short_url_state').notNull(),
     shortUrlType: ShortUrlTypePgEnum('short_url_type').notNull(),
