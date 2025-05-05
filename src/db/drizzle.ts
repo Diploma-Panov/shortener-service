@@ -9,6 +9,10 @@ const queryClient = postgres({
     user: config.postgres.username,
     password: config.postgres.password,
     ssl: config.postgres.ssl,
+
+    max: 100,
+    idle_timeout: 30_000,
+    connect_timeout: 10_000,
 });
 
 export const db = drizzle(queryClient);
